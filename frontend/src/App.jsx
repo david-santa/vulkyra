@@ -40,7 +40,6 @@ function SettingsPage({ theme, toggleTheme }) {
   );
 }
 
-// 🟢 AssetsPage with table functionality
 function AssetsPage() {
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
