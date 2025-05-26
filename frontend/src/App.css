@@ -85,3 +85,66 @@
     width: 100vw;
   }
 }
+
+/* Dark Mode changes*/
+
+body.dark, .dark {
+  --bg: #181a22;
+  --sidebar: #21243a;
+  --topbar: #21243a;
+  --panel: #23234a;
+  --card: #28294c;
+  --primary: #29c7ac;
+  --accent: #7f53ac;
+  --text: #f5f5f5;
+  --text-secondary: #b0b4c3;
+}
+
+body.light, .light {
+  --bg: #f5f6fa;
+  --sidebar: #e8eaf6;
+  --topbar: #e8eaf6;
+  --panel: #ffffff;
+  --card: #f0f3fa;
+  --primary: #0ca786;
+  --accent: #5e35b1;
+  --text: #23234a;
+  --text-secondary: #61677c;
+}
+
+/* Use these vars throughout your CSS: */
+body, .container {
+  background: var(--bg);
+  color: var(--text);
+}
+
+.sidebar {
+  background: var(--sidebar);
+  color: var(--text);
+}
+
+.sidebar-title {
+  color: var(--sidebar-title);
+}
+.sidebar button.active,
+.sidebar button:hover {
+  background: var(--sidebar-active);
+  color: #29c7ac;
+}
+.topbar {
+  background: var(--topbar);
+  color: var(--text);
+}
+
+.right-panel {
+  background: var(--panel); /* Distinct from sidebar/topbar */
+}
+
+.main-content {
+  background: var(--card);
+  color: var(--text);
+  border-radius: 16px;
+  margin: 2rem;
+  padding: 2rem;
+  box-shadow: 0 4px 24px rgba(40, 41, 76, 0.08);
+}
