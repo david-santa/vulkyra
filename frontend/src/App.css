@@ -1,14 +1,56 @@
-/* Layout */
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* THEME VARIABLES */
+body.dark, .dark {
+  --bg: #181a22;
+  --sidebar: #21243a;
+  --topbar: #21243a;
+  --panel: #23234a;
+  --card: #28294c;
+  --primary: #29c7ac;
+  --accent: #7f53ac;
+  --text: #f5f5f5;
+  --text-secondary: #b0b4c3;
+  --sidebar-active: #29c7ac;
+  --sidebar-active-text: #181a22;
+}
+body.light, .light {
+  --bg: #f5f6fa;
+  --sidebar: #e8eaf6;
+  --topbar: #e8eaf6;
+  --panel: #ffffff;
+  --card: #f0f3fa;
+  --primary: #29c7ac;
+  --accent: #5e35b1;
+  --text: #23234a;
+  --text-secondary: #61677c;
+  --sidebar-active: #00ffd0;
+  --sidebar-active-text: #fff;
+}
+
+body, .container {
+  background: var(--bg);
+  color: var(--text);
+}
+
+/* LAYOUT */
 .container {
   display: flex;
   min-height: 100vh;
 }
 
-/* Sidebar */
 .sidebar {
   width: 220px;
-  background: #1a1a2e;
-  color: #fff;
+  background: var(--sidebar);
+  color: var(--text);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -24,6 +66,13 @@
   text-align: left;
 }
 
+.logo-img-sidebar {
+  height: 7.5rem;
+  margin: 0 auto 1.5rem auto;
+  display: block;
+}
+
+/* SIDEBAR BUTTONS */
 .sidebar button {
   background: none;
   border: none;
@@ -33,27 +82,67 @@
   padding: 0.75em 1em;
   border-radius: 8px;
   margin-bottom: 4px;
-  transition: 
-    background 0.18s,
-    color 0.18s,
-    box-shadow 0.15s;
+  transition: background 0.18s, color 0.18s, box-shadow 0.15s;
   cursor: pointer;
   position: relative;
   z-index: 1;
 }
-.sidebar button.active, .sidebar button:hover {
-  background: #16213e;
-  color: #29c7ac;
+
+.sidebar button.active,
+.sidebar button:hover {
+  background: var(--primary);
+  color: var(--sidebar-active-text) !important;
+  box-shadow: 0 2px 12px var(--sidebar-active)55;
+  font-weight: bold;
 }
 
-/* Topbar */
+.sidebar button.active::before,
+.sidebar button:hover::before {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 0.1px;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--primary) 100%);
+  z-index: 2;
+}
+
+body.light .sidebar button.active,
+body.light .sidebar button:hover {
+  background: var(--primary);           /* Soft pale teal */
+  color: #23234a !important;     /* Vulkyra navy */
+  font-weight: bold;
+  box-shadow: 0 2px 10px #b9ece3;
+}
+
+body.light .sidebar button.active::before,
+body.light .sidebar button:hover::before {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 0.1px;
+  top: 0;
+  bottom: 0;
+  width: 12px;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--primary) 100%);
+  z-index: 2;
+}
+
+/* TOPBAR */
 .topbar {
-  background: #23234a;
-  color: #fff;
+  background: var(--topbar);
+  color: var(--text);
   padding: 1.2rem 2rem;
-  border-bottom: 1px solid #242454;
+  border-bottom: 1px solid var(--panel);
   display: flex;
   align-items: center;
+  gap: 1rem;
   height: 72px;
 }
 
@@ -63,19 +152,24 @@
   margin: 0;
 }
 
-/* Main Content */
+/* RIGHT PANEL & MAIN CONTENT */
 .right-panel {
   flex: 1;
   display: flex;
   flex-direction: column;
+  background: var(--panel);
 }
 
 .main-content {
-  padding: 2rem;
+  background: var(--card);
+  color: var(--text);
   flex: 1;
+  margin: 0;
+  padding: 2rem;
+  box-shadow: 0 4px 24px rgba(40, 41, 76, 0.08);
 }
 
-/* Responsive tweaks */
+/* RESPONSIVE */
 @media (max-width: 800px) {
   .container {
     flex-direction: column;
@@ -90,90 +184,4 @@
   .right-panel {
     width: 100vw;
   }
-}
-
-/* Dark Mode changes*/
-
-body.dark, .dark {
-  --bg: #181a22;
-  --sidebar: #21243a;
-  --topbar: #21243a;
-  --panel: #23234a;
-  --card: #28294c;
-  --primary: #29c7ac;
-  --accent: #7f53ac;
-  --text: #f5f5f5;
-  --text-secondary: #b0b4c3;
-}
-
-body.light, .light {
-  --bg: #f5f6fa;
-  --sidebar: #e8eaf6;
-  --topbar: #e8eaf6;
-  --panel: #ffffff;
-  --card: #f0f3fa;
-  --primary: #0ca786;
-  --accent: #5e35b1;
-  --text: #23234a;
-  --text-secondary: #61677c;
-}
-
-/* Use these vars throughout your CSS: */
-body, .container {
-  background: var(--bg);
-  color: var(--text);
-}
-
-.sidebar {
-  background: var(--sidebar);
-  color: var(--text);
-}
-
-.sidebar-title {
-  color: var(--sidebar-title);
-}
-.sidebar button.active,
-.sidebar button:hover {
-  background: var(--sidebar-active);
-  color: #29c7ac;
-}
-
-.logo-img-sidebar {
-  height: 7.5rem;
-  margin: 0 auto 1.5rem auto;
-  display: block;
-}
-
-.topbar {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  /* ...existing styles... */
-}
-
-.right-panel {
-  background: var(--panel); /* Distinct from sidebar/topbar */
-}
-
-.main-content {
-  background: var(--card);
-  color: var(--text);
-  margin: 0rem;
-  padding: 2rem;
-}
-
-/* STRONGER hover and active effect for both themes */
-body.dark .sidebar button.active,
-body.dark .sidebar button:hover {
-  background: #29c7ac;          /* Bright teal accent */
-  color: #181a22 !important;    /* Very dark text for contrast */
-  box-shadow: 0 2px 12px #29c7ac55;
-}
-
-body.light .sidebar button.active,
-body.light .sidebar button:hover {
-  background: #0ca786;          /* Brand accent, deep teal */
-  color: #fff !important;
-  box-shadow: 0 2px 10px #0ca78655;
-  font-weight: bold;
 }
