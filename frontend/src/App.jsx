@@ -4,7 +4,7 @@ function App() {
   const [message, setMessage] = useState('Loading...')
 
   useEffect(() => {
-    fetch('/api/health')
+    fetch('http://localhost:8080/api/health')
       .then(res => res.json())
       .then(data => setMessage(data.status))
       .catch(err => setMessage('API not reachable'))
