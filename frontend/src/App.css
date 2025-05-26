@@ -82,4 +82,6 @@
     overflow-x: auto;
   }
   .right-panel {
-    width
+    width: 100vw;
+  }
+}
