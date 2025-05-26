@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import logo from './assets/vulkyra-logo.png'
 import './App.css';
 
 function Sidebar({ current, setCurrent }) {
   return (
     <nav className="sidebar">
-      <div className="sidebar-title">Vulkyra</div>
+      <img src={logo} alt="Vulkyra logo" className="logo-img-sidebar" />
       <button className={current === 'dashboard' ? 'active' : ''} onClick={() => setCurrent('dashboard')}>Dashboard</button>
       <button className={current === 'assets' ? 'active' : ''} onClick={() => setCurrent('assets')}>Assets</button>
       <button className={current === 'vulnerabilities' ? 'active' : ''} onClick={() => setCurrent('vulnerabilities')}>Vulnerabilities</button>
