@@ -8,4 +8,5 @@ import (
 
 func RegisterAllRoutes(r *gin.Engine) {
 	api.RegisterHealthRoutes(r)
+	api.RegisterAssetRoutes(r)
 }
