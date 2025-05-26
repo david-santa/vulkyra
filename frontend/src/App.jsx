@@ -40,11 +40,62 @@ function SettingsPage({ theme, toggleTheme }) {
   );
 }
 
+// 🟢 AssetsPage with table functionality
+function AssetsPage() {
+  const [assets, setAssets] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    fetch('http://localhost:8080/api/assets')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch assets');
+        return res.json();
+      })
+      .then(data => {
+        setAssets(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        setError(err.message);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <div>Loading assets...</div>;
+  if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
+  if (assets.length === 0) return <div>No assets found.</div>;
+
+  return (
+    <div>
+      <h2>Assets</h2>
+      <table className="assets-table">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>FQDN</th>
+            <th>IP Address</th>
+          </tr>
+        </thead>
+        <tbody>
+          {assets.map(asset => (
+            <tr key={asset.id}>
+              <td>{asset.id}</td>
+              <td>{asset.fqdn}</td>
+              <td>{asset.ip}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function MainContent({ current, message, theme, toggleTheme }) {
   return (
     <main className="main-content">
       {current === 'dashboard' && <p>Welcome to Vulkyra. Status: <b>{message}</b></p>}
-      {current === 'assets' && <p>Assets page (coming soon!)</p>}
+      {current === 'assets' && <AssetsPage />}
       {current === 'vulnerabilities' && <p>Vulnerabilities page (coming soon!)</p>}
       {current === 'settings' && <SettingsPage theme={theme} toggleTheme={toggleTheme} />}
     </main>

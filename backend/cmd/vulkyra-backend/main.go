@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"log"
 
+	_ "github.com/lib/pq" // <-- This is required!
+
 	"github.com/david-santa/vulkyra/backend/internal/repository"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
