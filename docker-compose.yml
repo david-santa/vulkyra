@@ -1,31 +1,37 @@
-version: "3.8"
+version: "3.9"
 
 services:
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     environment:
-      DATABASE_URL: "postgres://user:pass@db:5432/vulndb"
-      JWT_SECRET: "your-secret-key"
+      DATABASE_URL: postgres://vulkyra:secretpassword@db:5432/vulkyra?sslmode=disable
     depends_on:
       - db
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     ports:
       - "80:80"
     depends_on:
       - backend
 
   db:
-    image: postgres:16-alpine
+    image: postgres:16
+    restart: always
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: pass
-      POSTGRES_DB: vulndb
+      POSTGRES_DB: vulkyra
+      POSTGRES_USER: vulkyra
+      POSTGRES_PASSWORD: secretpassword
+    ports:
+      - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
 
 volumes:
-  db_data:
+  pgdata:

@@ -1,11 +1,16 @@
 FROM golang:1.24.3-alpine as builder
+
 WORKDIR /app
-COPY . .
+
+COPY go.mod go.sum ./
 RUN go mod download
-RUN go build -o vulkyra-api main.go
+
+COPY . .
+RUN go build -o vulkyra-backend ./cmd/vulkyra-backend
 
 FROM alpine:latest
-WORKDIR /root/
-COPY --from=builder /app/vulkyra-api .
+
+WORKDIR /app
+COPY --from=builder /app/vulkyra-backend .
 EXPOSE 8080
-CMD ["./vulkyra-api"]
+CMD ["./vulkyra-backend"]
