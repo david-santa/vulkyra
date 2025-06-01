@@ -7,9 +7,11 @@ function Sidebar({ current, setCurrent }) {
     <nav className="sidebar">
       <img src={logo} alt="Vulkyra logo" className="logo-img-sidebar" />
       <button className={current === 'dashboard' ? 'active' : ''} onClick={() => setCurrent('dashboard')}>Dashboard</button>
+      <button className={current === 'teams' ? 'active' : ''} onClick={() => setCurrent('teams')}>Teams</button>
       <button className={current === 'assets' ? 'active' : ''} onClick={() => setCurrent('assets')}>Assets</button>
       <button className={current === 'vulnerabilities' ? 'active' : ''} onClick={() => setCurrent('vulnerabilities')}>Vulnerabilities</button>
       <button className={current === 'settings' ? 'active' : ''} onClick={() => setCurrent('settings')}>Settings</button>
+      
     </nav>
   );
 }
@@ -91,10 +93,51 @@ function AssetsPage() {
   );
 }
 
+function TeamsPage() {
+  const [teams, setTeams] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('http://localhost:8080/api/teams')
+      .then(res => res.json())
+      .then(data => {
+        setTeams(data);
+        setLoading(false);
+      });
+  }, []);
+
+  if (loading) return <div>Loading teams...</div>;
+
+  return (
+    <div>
+      <h2>Teams</h2>
+      <table className='teams-table'>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Parent Team</th>
+          </tr>
+        </thead>
+        <tbody>
+          {teams.map(team => (
+            <tr key={team.id}>
+              <td>{team.name}</td>
+              <td>{team.email}</td>
+              <td>{team.parent_id || <span style={{ color: '#888' }}>ROOT</span>}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function MainContent({ current, message, theme, toggleTheme }) {
   return (
     <main className="main-content">
       {current === 'dashboard' && <p>Welcome to Vulkyra. Status: <b>{message}</b></p>}
+      {current === 'teams' && <TeamsPage />}
       {current === 'assets' && <AssetsPage />}
       {current === 'vulnerabilities' && <p>Vulnerabilities page (coming soon!)</p>}
       {current === 'settings' && <SettingsPage theme={theme} toggleTheme={toggleTheme} />}

@@ -230,3 +230,99 @@ body.light .sidebar button:hover::before {
 .assets-table tr:last-child td {
   border-bottom: none;
 }
+
+.teams-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: var(--card);
+  color: var(--text);
+  margin: 2rem 0;
+  font-size: 1.06em;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(40, 41, 76, 0.08);
+  overflow: hidden;
+}
+
+.teams-table thead {
+  background: var(--panel);
+}
+
+.teams-table th,
+.teams-table td {
+  padding: 0.85em 1.2em;
+  text-align: left;
+  border-bottom: 1px solid #e3e8f0;
+  transition: background 0.2s, color 0.2s;
+}
+
+.teams-table th {
+  font-weight: 700;
+  font-size: 1.08em;
+  letter-spacing: 0.03em;
+  color: var(--text);
+  background: var(--panel);
+}
+
+.teams-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.teams-table tbody tr {
+  transition: background 0.18s, color 0.18s;
+}
+
+.teams-table tbody tr:hover {
+  background: var(--sidebar-active);
+  color: var(--sidebar-active-text);
+}
+
+.teams-table tbody td {
+  vertical-align: middle;
+}
+
+.teams-table,
+.teams-table thead,
+.teams-table tbody,
+.teams-table th,
+.teams-table td,
+.teams-table tr {
+  border: none;
+}
+
+/* Responsive for mobile */
+@media (max-width: 700px) {
+  .teams-table,
+  .teams-table thead,
+  .teams-table tbody,
+  .teams-table th,
+  .teams-table td,
+  .teams-table tr {
+    display: block;
+    width: 100%;
+  }
+  .teams-table thead tr {
+    display: none;
+  }
+  .teams-table tbody tr {
+    margin-bottom: 1.2em;
+    background: var(--card);
+    border-radius: 8px;
+    box-shadow: 0 1px 4px rgba(40,41,76,0.06);
+  }
+  .teams-table td {
+    padding: 0.7em 1em;
+    text-align: left;
+    position: relative;
+    min-height: 32px;
+    border-bottom: none;
+  }
+  .teams-table td::before {
+    content: attr(data-label) ": ";
+    font-weight: bold;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 0.15em;
+    font-size: 0.98em;
+  }
+}

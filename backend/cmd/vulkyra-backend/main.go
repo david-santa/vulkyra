@@ -17,8 +17,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	repository.SetDB(db)
-
 	// Assign the DB instance to repository
 	repository.SetDB(db)
 
@@ -29,7 +27,15 @@ func main() {
         ip VARCHAR(50)
     )`)
 
+	db.Exec(`CREATE TABLE IF NOT EXISTS teams (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(255) NOT NULL UNIQUE,
+    email VARCHAR(255) NOT NULL UNIQUE,
+    parent_id BIGINT NOT NULL
+	)`)
+
 	repository.InsertDummyAssets()
+	repository.InsertDummyTeams()
 
 	r := gin.Default()
 	r.Use(cors.Default())

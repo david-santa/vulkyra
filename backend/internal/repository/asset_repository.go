@@ -1,17 +1,10 @@
 package repository
 
 import (
-	"database/sql"
 	"log"
 
 	"github.com/david-santa/vulkyra/backend/internal/models"
 )
-
-var db *sql.DB
-
-func SetDB(database *sql.DB) {
-	db = database
-}
 
 func GetAllAssets() ([]models.Asset, error) {
 	rows, err := db.Query("SELECT id, fqdn, ip FROM assets")
