@@ -326,3 +326,63 @@ body.light .sidebar button:hover::before {
     font-size: 0.98em;
   }
 }
+
+.teams-tree {
+  list-style: none;
+  margin: 0;
+  padding-left: 0;
+}
+
+.teams-tree li {
+  position: relative;
+  padding-left: 1.5em;
+  margin: 0;
+  line-height: 1.6;
+}
+
+.teams-tree li::before {
+  content: "";
+  position: absolute;
+  left: 0.45em;
+  top: 0;
+  width: 0;
+  height: 100%;
+  border-left: 2px solid #b0b4c3;
+}
+
+.teams-tree li::after {
+  content: "";
+  position: absolute;
+  left: 0.45em;
+  top: 1.2em;
+  width: 1em;
+  height: 0;
+  border-top: 2px solid #b0b4c3;
+}
+
+.teams-tree > li::before {
+  display: none;
+}
+
+.teams-tree > li::after {
+  display: none;
+}
+
+.teams-tree li:last-child::before {
+  /* For the last child, cut the vertical line short */
+  height: 1.2em;
+}
+
+.teams-tree .team-node {
+  position: relative;
+  z-index: 1;
+  background: transparent;
+  display: inline-block;
+}
+
+.teams-tree .team-email {
+  color: #b0b4c3;
+  font-size: 0.96em;
+  font-weight: normal;
+  margin-left: 0.3em;
+}
