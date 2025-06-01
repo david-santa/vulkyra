@@ -34,6 +34,9 @@ func main() {
     parent_id BIGINT NOT NULL
 	)`)
 
+	// Truncate tables to prevent duplicates
+	db.Exec("TRUNCATE TABLE assets")
+
 	repository.InsertDummyAssets()
 	repository.InsertDummyTeams()
 
