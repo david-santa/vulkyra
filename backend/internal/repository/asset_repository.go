@@ -31,7 +31,6 @@ func InsertDummyAssets() error {
 	}
 
 	for _, asset := range dummyAssets {
-		// Add ON CONFLICT
 		_, err := db.Exec("INSERT INTO assets (fqdn, ip) VALUES ($1, $2)", asset.FQDN, asset.IP)
 		if err != nil {
 			log.Println("Error inserting asset:", err)
