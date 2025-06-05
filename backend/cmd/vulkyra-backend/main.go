@@ -6,6 +6,7 @@ import (
 
 	_ "github.com/lib/pq" // <-- This is required!
 
+	"github.com/david-santa/vulkyra/backend/cmd/auth"
 	"github.com/david-santa/vulkyra/backend/internal/repository"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -42,6 +43,9 @@ func main() {
 
 	r := gin.Default()
 	r.Use(cors.Default())
+	r.POST("/api/login", auth.LoginHandler)
+	protected := r.Group("/api")
+	protected.Use(auth.AuthMiddleware())
 
 	RegisterAllRoutes(r)
 
