@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from 'react';
 
-export default function TeamsPage() {
+export default function TeamsPage({token}) {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/teams')
+    fetch('http://localhost:8080/api/teams', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
       .then(res => res.json())
       .then(data => {
         setTeams(Array.isArray(data) ? data : []);

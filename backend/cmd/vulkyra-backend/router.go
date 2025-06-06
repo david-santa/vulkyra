@@ -6,8 +6,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterAllRoutes(r *gin.Engine) {
+func RegisterAllRoutes(r *gin.Engine, protected *gin.RouterGroup) {
 	api.RegisterHealthRoutes(r)
-	api.RegisterAssetRoutes(r)
-	api.RegisterTeamRoutes(r)
+	api.RegisterAssetRoutes(protected)
+	api.RegisterTeamRoutes(protected)
+	api.RegisterMeRoutes(protected)
 }

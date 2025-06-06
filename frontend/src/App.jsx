@@ -47,12 +47,13 @@ export default function App() {
     <div className="container">
       <Sidebar current={current} setCurrent={setCurrent} />
       <div className="right-panel">
-        <Topbar onLogout={handleLogout} />
+        <Topbar onLogout={handleLogout} token={token} />
         <MainContent
           current={current}
           message={message}
           theme={theme}
           toggleTheme={toggleTheme}
+          token={token}
         />
       </div>
     </div>

@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterTeamRoutes(r *gin.Engine) {
-	r.GET("/api/teams", getAllTeams)
+func RegisterTeamRoutes(r *gin.RouterGroup) {
+	r.GET("/teams", getAllTeams)
 }
 
 func getAllTeams(c *gin.Context) {

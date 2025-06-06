@@ -13,7 +13,7 @@ Vulkyra ⚔️ — A modern, containerized Vulnerability Management Platform bui
 - [x] ✅ Setup basic Gin server with `/api/health`
 - [x] ✅ Enable CORS middleware
 - [x] ✅ Dockerfile with Air live-reload support
-- [ ] 🔥 Implement JWT authentication & middleware
+- [x] ✅ Implement JWT authentication & middleware
 - [ ] 🔥 Design DB schema with GORM: users, roles, teams, assets, vulnerabilities
 - [ ] ⚠️ Create REST API endpoints:
   - [ ] 🔥 `/auth/login`, `/auth/register`
@@ -30,7 +30,7 @@ Vulkyra ⚔️ — A modern, containerized Vulnerability Management Platform bui
 - [x] ✅ React + Vite setup with working API fetch
 - [x] ✅ Dockerized frontend with live reloading
 - [x] ✅ Display backend status via `/api/health`
-- [ ] 🔥 Implement login page and JWT session storage
+- [x] ✅ Implement login page and JWT session storage
 - [ ] ⚠️ Role-based dashboards:
   - [ ] 🔥 Analyst Dashboard: vuln/asset list + filters
   - [ ] ⚠️ Leadership Dashboard: charts by team/org

@@ -72,7 +72,7 @@ func main() {
 	protected := r.Group("/api")
 	protected.Use(auth.AuthMiddleware())
 
-	RegisterAllRoutes(r)
+	RegisterAllRoutes(r, protected)
 
 	r.Run(":8080")
 }

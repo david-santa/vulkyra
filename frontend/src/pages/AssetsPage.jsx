@@ -1,12 +1,17 @@
 import React, { useEffect, useState } from 'react';
 
-export default function AssetsPage() {
+export default function AssetsPage({token}) {
   const [assets, setAssets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/assets')
+    fetch('http://localhost:8080/api/assets', {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch assets');
         return res.json();

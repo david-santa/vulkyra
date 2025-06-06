@@ -7,8 +7,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterAssetRoutes(r *gin.Engine) {
-	r.GET("/api/assets", getAllAssets)
+func RegisterAssetRoutes(r *gin.RouterGroup) {
+	r.GET("/assets", getAllAssets)
 }
 
 func getAllAssets(c *gin.Context) {
