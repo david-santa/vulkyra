@@ -21,6 +21,8 @@ func main() {
 	// Assign the DB instance to repository
 	repository.SetDB(db)
 
+	db.Exec("DROP TABLE teams")
+
 	// Create table if not exists (for quick dev/demo)
 	db.Exec(`CREATE TABLE IF NOT EXISTS assets (
         id SERIAL PRIMARY KEY,
@@ -45,7 +47,6 @@ func main() {
 
 	// Truncate tables to prevent duplicates
 	db.Exec("TRUNCATE TABLE assets")
-	db.Exec("TRUNCATE TABLE teams")
 	db.Exec("TRUNCATE TABLE users")
 
 	repository.InsertDummyAssets()
