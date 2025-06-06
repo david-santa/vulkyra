@@ -6,8 +6,8 @@ import (
 
 func InsertDummyUsers() error {
 	dummy := []models.User{
-		{Username: "ceo", Email: "ceo@vulkyra.com", PasswordHash: "c29tZXNhbHQ$mVD1NHum/J9ckmxeiPmzgMPN7e6rEgtQG3qGGIwuxR8", Role: "admin"},                                      //iamtheceo
-		{Username: "david", Email: "david@vulkyra.com", PasswordHash: "$argon2id$v=19$m=64000,t=1,p=4$c29tZXNhbHQ$Cnu7CQyUFsSoG6RziOJtU3PV0OI2FOlOpU+OlMP86Cc", Role: "analyst"}, //iamdavid
+		{Username: "ceo", Email: "ceo@vulkyra.com", PasswordHash: "c29tZXNhbHQ$mVD1NHum/J9ckmxeiPmzgMPN7e6rEgtQG3qGGIwuxR8", Role: "admin"},           //iamtheceo
+		{Username: "david", Email: "david@vulkyra.com", PasswordHash: "YW5vdGhlcnNhbHQ$NH1X0CB9n/VN4Z4IpnlWKJtzNq+hMIjdvRYS4iMBWgY", Role: "analyst"}, //iamdavid
 	}
 
 	for _, u := range dummy {
