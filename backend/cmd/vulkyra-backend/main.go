@@ -35,14 +35,39 @@ func main() {
     parent_id BIGINT NOT NULL
 	)`)
 
+	db.Exec(`CREATE TABLE IF NOT EXISTS users (
+	id SERIAL PRIMARY KEY,
+	username VARCHAR(255) NOT NULL UNIQUE,
+	email VARCHAR(255) UNIQUE,
+	password_hash VARCHAR(255) NOT NULL,
+	role VARCHAR(255)
+	)`)
+
 	// Truncate tables to prevent duplicates
 	db.Exec("TRUNCATE TABLE assets")
+	db.Exec("TRUNCATE TABLE teams")
+	db.Exec("TRUNCATE TABLE users")
 
 	repository.InsertDummyAssets()
 	repository.InsertDummyTeams()
+	repository.InsertDummyUsers()
 
 	r := gin.Default()
-	r.Use(cors.Default())
+
+	r.Use(func(c *gin.Context) {
+		c.Set("db", db)
+		c.Next()
+	})
+
+	// Enable CORS for all Methods and Headers
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost", "http://localhost:8080, http://localhost:5432"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+	}))
+
 	r.POST("/api/login", auth.LoginHandler)
 	protected := r.Group("/api")
 	protected.Use(auth.AuthMiddleware())

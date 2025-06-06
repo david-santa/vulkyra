@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"database/sql"
 	"fmt"
 	"net/http"
 	"time"
@@ -23,22 +24,35 @@ type Claims struct {
 }
 
 func LoginHandler(c *gin.Context) {
+	db := c.MustGet("db").(*sql.DB)
+
 	var creds Credentials
+	var role string
 	if err := c.ShouldBindJSON(&creds); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid request"})
 		return
 	}
 
-	// TODO: Replace with real user check
-	if creds.Username != "admin" || creds.Password != "password" {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "invalid credentials"})
+	var storedHash string
+
+	err := db.QueryRow("SELECT password_hash, role FROM users WHERE username=$1", creds.Username).Scan(&storedHash, &role)
+	if err == sql.ErrNoRows {
+		c.JSON(401, gin.H{"error": "Invalid credentials"})
+		return
+	} else if err != nil {
+		c.JSON(500, gin.H{"error": "Server error"})
+		return
+	}
+
+	if !verifyPassword(creds.Password, storedHash) {
+		c.JSON(401, gin.H{"error": "Invalid credentials"})
 		return
 	}
 
 	expirationTime := time.Now().Add(1 * time.Hour)
 	claims := &Claims{
 		Username: creds.Username,
-		Role:     "admin",
+		Role:     role,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(expirationTime),
 		},
