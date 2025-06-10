@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 export default function TeamsPage({token}) {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetch('http://localhost:8080/api/teams', {
@@ -11,9 +12,16 @@ export default function TeamsPage({token}) {
         'Content-Type': 'application/json'
       }
     })
-      .then(res => res.json())
+    .then(res => {
+      if(!res.ok) throw new Error('Failed to fetch teams')
+        return res.json();
+    })
       .then(data => {
         setTeams(Array.isArray(data) ? data : []);
+        setLoading(false);
+      })
+      .catch(err =>{
+        setError(err.message);
         setLoading(false);
       });
   }, []);
@@ -58,6 +66,7 @@ export default function TeamsPage({token}) {
   );
 
   if (loading) return <div>Loading teams...</div>;
+  if (error) return <div style={{ color: 'red'}}> Error: {error} </div>
 
   const treeRoots = buildTeamTree(teams);
 
