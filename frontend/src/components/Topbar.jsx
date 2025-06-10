@@ -20,13 +20,13 @@ function Topbar({onLogout, token}) {
   return (
     <header className="topbar">
       <h1 className="project-title">Vulkyra Platform</h1>
-       {onLogout && <button style={{ float: 'right' }} onClick={onLogout}>Logout</button>}
       {user && (
         <div className="topbar-user">
           <span className="topbar-username">{user.username}</span>
           <span className="topbar-role">{user.role}</span>
         </div>
       )}
+      {onLogout && <button style={{ float: 'right' }} onClick={onLogout}>Logout</button>}
     </header>
   );
 }

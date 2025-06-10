@@ -134,7 +134,6 @@ body.light .sidebar button:hover::before {
   z-index: 2;
 }
 
-/* TOPBAR */
 .topbar {
   background: var(--topbar);
   color: var(--text);
@@ -142,8 +141,61 @@ body.light .sidebar button:hover::before {
   border-bottom: 1px solid var(--panel);
   display: flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: space-between;
   height: 72px;
+}
+
+.project-title {
+  font-size: 2em;
+  letter-spacing: 1.5px;
+  margin: 0;
+  flex: 1;
+}
+
+.topbar-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75em;
+  background: var(--panel);
+  border-radius: 16px;
+  padding: 0.35em 1.2em;
+  box-shadow: 0 1px 6px rgba(40,41,76,0.09);
+}
+
+.topbar-username {
+  font-weight: 500;
+  font-size: 1.09em;
+  letter-spacing: 0.01em;
+  color: var(--text);
+}
+
+.topbar-role {
+  margin-left: 0.6em;
+  font-size: 0.97em;
+  font-weight: 600;
+  color: var(--primary);
+  background: rgba(41, 199, 172, 0.13);
+  border-radius: 12px;
+  padding: 0.17em 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.topbar button {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  padding: 0.5em 1.2em;
+  margin-left: 1.5em;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(41, 199, 172, 0.09);
+  transition: background 0.18s;
+}
+
+.topbar button:hover {
+  background: var(--accent);
 }
 
 .project-title {
