@@ -7,7 +7,7 @@ import (
 )
 
 func GetAllAssets() ([]models.Asset, error) {
-	rows, err := db.Query("SELECT id, fqdn, ip FROM assets")
+	rows, err := db.Query("SELECT id, fqdn, ip, owner_id FROM assets")
 	if err != nil {
 		return nil, err
 	}
@@ -16,7 +16,7 @@ func GetAllAssets() ([]models.Asset, error) {
 	var assets []models.Asset
 	for rows.Next() {
 		var asset models.Asset
-		if err := rows.Scan(&asset.ID, &asset.FQDN, &asset.IP); err != nil {
+		if err := rows.Scan(&asset.ID, &asset.FQDN, &asset.IP, &asset.OwnerID); err != nil {
 			return nil, err
 		}
 		assets = append(assets, asset)
@@ -26,12 +26,12 @@ func GetAllAssets() ([]models.Asset, error) {
 
 func InsertDummyAssets() error {
 	dummyAssets := []models.Asset{
-		{FQDN: "host1.example.com", IP: "10.0.0.1"},
-		{FQDN: "host2.example.com", IP: "10.0.0.2"},
+		{FQDN: "host1.example.com", IP: "10.0.0.1", OwnerID: 3},
+		{FQDN: "host2.example.com", IP: "10.0.0.2", OwnerID: 6},
 	}
 
 	for _, asset := range dummyAssets {
-		_, err := db.Exec("INSERT INTO assets (fqdn, ip) VALUES ($1, $2)", asset.FQDN, asset.IP)
+		_, err := db.Exec("INSERT INTO assets (fqdn, ip, owner_id) VALUES ($1, $2, $3)", asset.FQDN, asset.IP, asset.OwnerID)
 		if err != nil {
 			log.Println("Error inserting asset:", err)
 		}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-function Topbar({token}) {
+function Topbar({onLogout, token}) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
@@ -20,6 +20,7 @@ function Topbar({token}) {
   return (
     <header className="topbar">
       <h1 className="project-title">Vulkyra Platform</h1>
+       {onLogout && <button style={{ float: 'right' }} onClick={onLogout}>Logout</button>}
       {user && (
         <div className="topbar-user">
           <span className="topbar-username">{user.username}</span>

@@ -22,12 +22,15 @@ func main() {
 	repository.SetDB(db)
 
 	db.Exec("DROP TABLE teams")
+	db.Exec("DROP TABLE assets")
+	db.Exec("DROP TABLE users")
 
 	// Create table if not exists (for quick dev/demo)
 	db.Exec(`CREATE TABLE IF NOT EXISTS assets (
         id SERIAL PRIMARY KEY,
         fqdn VARCHAR(255),
-        ip VARCHAR(50)
+        ip VARCHAR(50),
+		owner_id BIGINT
     )`)
 
 	db.Exec(`CREATE TABLE IF NOT EXISTS teams (
@@ -44,10 +47,6 @@ func main() {
 	password_hash VARCHAR(255) NOT NULL,
 	role VARCHAR(255)
 	)`)
-
-	// Truncate tables to prevent duplicates
-	db.Exec("TRUNCATE TABLE assets")
-	db.Exec("TRUNCATE TABLE users")
 
 	repository.InsertDummyAssets()
 	repository.InsertDummyTeams()
