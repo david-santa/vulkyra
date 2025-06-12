@@ -1,9 +1,28 @@
-import React, { useEffect, useState } from 'react';
-import './App.css';
+import React, { useEffect, useState, useMemo } from 'react';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import MainContent from './components/MainContent';
 import LoginPage from './pages/LoginPage';
+
+// MUI theme imports
+import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material';
+
+// Your color palettes
+const lightPalette = {
+  mode: 'light',
+  background: { default: '#f5f6fa', paper: '#ffffff' },
+  primary: { main: '#29c7ac' },
+  secondary: { main: '#5e35b1' },
+  text: { primary: '#23234a', secondary: '#61677c' },
+};
+
+const darkPalette = {
+  mode: 'dark',
+  background: { default: '#181a22', paper: '#23234a' },
+  primary: { main: '#29c7ac' },
+  secondary: { main: '#7f53ac' },
+  text: { primary: '#f5f5f5', secondary: '#b0b4c3' },
+};
 
 export default function App() {
   const [token, setToken] = useState(() => localStorage.getItem('token') || '');
@@ -11,6 +30,7 @@ export default function App() {
   const [current, setCurrent] = useState('dashboard');
   const [theme, setTheme] = useState('dark');
 
+  // Set body class for your own CSS
   useEffect(() => {
     if (token) {
       document.body.classList.remove('dark', 'light');
@@ -39,23 +59,42 @@ export default function App() {
   };
   const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
 
-  if (!token) {
-    return <LoginPage onLogin={handleLogin} />;
+  // Create the MUI theme (only changes palette for MUI components)
+  const muiTheme = useMemo(
+    () =>
+      createTheme({
+        palette: theme === 'light' ? lightPalette : darkPalette,
+      }),
+    [theme]
+  );
+
+    if (!token) {
+    return (
+      <ThemeProvider theme={muiTheme}>
+        <CssBaseline />
+        <LoginPage onLogin={handleLogin} />
+      </ThemeProvider>
+    );
   }
 
   return (
-    <div className="container">
-      <Sidebar current={current} setCurrent={setCurrent} />
-      <div className="right-panel">
-        <Topbar onLogout={handleLogout} token={token} />
-        <MainContent
-          current={current}
-          message={message}
-          theme={theme}
-          toggleTheme={toggleTheme}
-          token={token}
-        />
-      </div>
-    </div>
+    <ThemeProvider theme={muiTheme}>
+      <CssBaseline />
+      <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+        {/* Sidebar is permanent and on the left */}
+        <Sidebar current={current} setCurrent={setCurrent} />
+        {/* Main area grows to fill the rest */}
+        <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <Topbar onLogout={handleLogout} token={token} />
+          <MainContent
+            current={current}
+            message={message}
+            theme={theme}
+            toggleTheme={toggleTheme}
+            token={token}
+          />
+        </Box>
+      </Box>
+    </ThemeProvider>
   );
 }
