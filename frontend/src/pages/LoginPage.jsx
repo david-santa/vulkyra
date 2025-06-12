@@ -1,4 +1,12 @@
 import React, { useState } from 'react';
+import {
+  Box,
+  Paper,
+  Typography,
+  TextField,
+  Button,
+  Alert,
+} from '@mui/material';
 
 export default function LoginPage({ onLogin }) {
   const [username, setUsername] = useState('');
@@ -22,14 +30,54 @@ export default function LoginPage({ onLogin }) {
   };
 
   return (
-    <div className="login-page">
-      <h2>Login to Vulkyra</h2>
-      <form onSubmit={handleSubmit}>
-        <input placeholder="Username" value={username} onChange={e=>setUsername(e.target.value)} />
-        <input type="password" placeholder="Password" value={password} onChange={e=>setPassword(e.target.value)} />
-        <button type="submit">Login</button>
-        {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
-      </form>
-    </div>
+    <Box
+      sx={{
+        height: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        bgcolor: 'background.default',
+      }}
+    >
+      <Paper sx={{ p: 4, width: 350, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <Typography variant="h5" align="center" gutterBottom>
+          Login to Vulkyra
+        </Typography>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <TextField
+            label="Username"
+            variant="outlined"
+            value={username}
+            onChange={e => setUsername(e.target.value)}
+            fullWidth
+            required
+            autoFocus
+          />
+          <TextField
+            label="Password"
+            variant="outlined"
+            type="password"
+            value={password}
+            onChange={e => setPassword(e.target.value)}
+            fullWidth
+            required
+          />
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            fullWidth
+            sx={{ mt: 2 }}
+          >
+            Login
+          </Button>
+        </form>
+        {error && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
+        )}
+      </Paper>
+    </Box>
   );
 }
