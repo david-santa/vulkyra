@@ -1,9 +1,30 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState } from 'react';
+import {
+  Box,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  Menu,
+  MenuItem,
+  TextField,
+  Typography,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper
+} from '@mui/material';
+
+
 
 function EditAssetModal({ asset, open, onClose, onSave }) {
   const [fqdn, setFqdn] = useState('');
   const [ip, setIp] = useState('');
   const [ownerId, setOwnerId] = useState('');
+  
 
   useEffect(() => {
     if (asset) {
@@ -13,37 +34,49 @@ function EditAssetModal({ asset, open, onClose, onSave }) {
     }
   }, [asset]);
 
-  if (!open || !asset) return null;
-  return (
-    <div className="modal">
-      <h3>Edit Asset</h3>
-      <form onSubmit={e => {
-        e.preventDefault();
-        onSave({
-          ...asset,
-          fqdn,
-          ip,
-          owner_id: ownerId,
-        });
-      }}>
-        <label>FQDN: <input value={fqdn} onChange={e => setFqdn(e.target.value)} /></label><br />
-        <label>IP: <input value={ip} onChange={e => setIp(e.target.value)} /></label><br />
-        <label>Owner ID: <input value={ownerId} onChange={e => setOwnerId(e.target.value)} /></label><br />
-        <button type="submit">Save</button>
-        <button type="button" onClick={onClose}>Cancel</button>
-      </form>
-    </div>
-  );
-}
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSave({
+      ...asset,
+      fqdn,
+      ip,
+      owner_id: ownerId,
+    });
+  };
 
-function ContextMenu({ x, y, visible, onEdit, onClose }) {
-  if (!visible) return null;
   return (
-    <ul className="context-menu" style={{ top: y, left: x, position: 'fixed', zIndex: 2000 }}>
-      <li onClick={onEdit}>Edit</li>
-      {/* Add more options here if needed */}
-      <li onClick={onClose} style={{ color: '#888' }}>Cancel</li>
-    </ul>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <DialogTitle>Edit Asset</DialogTitle>
+      <form onSubmit={handleSubmit}>
+        <DialogContent>
+          <TextField
+            label="FQDN"
+            value={fqdn}
+            onChange={e => setFqdn(e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="IP"
+            value={ip}
+            onChange={e => setIp(e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+          <TextField
+            label="Owner ID"
+            value={ownerId}
+            onChange={e => setOwnerId(e.target.value)}
+            fullWidth
+            margin="normal"
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose} color="secondary">Cancel</Button>
+          <Button type="submit" variant="contained">Save</Button>
+        </DialogActions>
+      </form>
+    </Dialog>
   );
 }
 
@@ -51,11 +84,10 @@ export default function AssetsPage({ token }) {
   const [assets, setAssets] = useState([]);
   const [editingAsset, setEditingAsset] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [menuPos, setMenuPos] = useState({ x: 0, y: 0 });
-  const [contextAsset, setContextAsset] = useState(null);
-  const [menuVisible, setMenuVisible] = useState(false);
 
-  const tableRef = useRef(null);
+  // Context Menu state
+  const [contextAsset, setContextAsset] = useState(null);
+   const [menuPosition, setMenuPosition] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:8080/api/assets', {
@@ -65,27 +97,16 @@ export default function AssetsPage({ token }) {
       .then(setAssets);
   }, [token]);
 
-  // Hide context menu on click outside
-  useEffect(() => {
-    const handleClick = () => setMenuVisible(false);
-    if (menuVisible) document.addEventListener('click', handleClick);
-    return () => document.removeEventListener('click', handleClick);
-  }, [menuVisible]);
+  const handleContextMenu = (event, asset) => {
+  event.preventDefault();
+  setContextAsset(asset);
+  setMenuPosition({
+    mouseX: event.clientX + 2,
+    mouseY: event.clientY - 6,
+  });
+};
 
-  function handleContextMenu(e, asset) {
-    e.preventDefault();
-    setMenuPos({ x: e.clientX, y: e.clientY });
-    setContextAsset(asset);
-    setMenuVisible(true);
-  }
-
-  function handleEdit() {
-    setEditingAsset(contextAsset);
-    setModalOpen(true);
-    setMenuVisible(false);
-  }
-
-  function handleSave(updatedAsset) {
+  const handleSave = (updatedAsset) => {
     fetch(`http://localhost:8080/api/assets/${updatedAsset.id}`, {
       method: "PUT",
       headers: {
@@ -99,41 +120,67 @@ export default function AssetsPage({ token }) {
         setAssets(assets.map(a => a.id === saved.id ? saved : a));
         setModalOpen(false);
       });
-  }
+  };
+
+  const handleMenuClose = () => {
+  setMenuPosition(null);
+};
+
+const handleEdit = () => {
+  setEditingAsset(contextAsset);
+  setModalOpen(true);
+  setMenuPosition(null);
+};
 
   return (
-    <div>
-      <h2>Assets</h2>
-      <table className="assets-table" ref={tableRef}>
-        <thead>
-          <tr>
-            <th>ID</th><th>FQDN</th><th>IP Address</th><th>Owner ID</th>
-          </tr>
-        </thead>
-        <tbody>
-          {assets.map(asset => (
-            <tr key={asset.id} onContextMenu={e => handleContextMenu(e, asset)}>
-              <td>{asset.id}</td>
-              <td>{asset.fqdn}</td>
-              <td>{asset.ip}</td>
-              <td>{asset.owner_id}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <ContextMenu
-        x={menuPos.x}
-        y={menuPos.y}
-        visible={menuVisible}
-        onEdit={handleEdit}
-        onClose={() => setMenuVisible(false)}
-      />
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h4" sx={{ mb: 2 }}>Assets</Typography>
+      <Paper>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>ID</TableCell>
+              <TableCell>FQDN</TableCell>
+              <TableCell>IP Address</TableCell>
+              <TableCell>Owner ID</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {assets.map(asset => (
+              <TableRow
+                key={asset.id}
+                onContextMenu={e => handleContextMenu(e, asset)}
+                hover
+                sx={{ cursor: 'context-menu' }}
+              >
+                <TableCell>{asset.id}</TableCell>
+                <TableCell>{asset.fqdn}</TableCell>
+                <TableCell>{asset.ip}</TableCell>
+                <TableCell>{asset.owner_id}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </Paper>
+      <Menu
+        open={Boolean(menuPosition)}
+        onClose={handleMenuClose}
+        anchorReference="anchorPosition"
+        anchorPosition={
+          menuPosition !== null
+            ? { top: menuPosition.mouseY, left: menuPosition.mouseX }
+            : undefined
+        }
+      >
+        <MenuItem onClick={handleEdit}>Edit</MenuItem>
+        <MenuItem onClick={handleMenuClose} sx={{ color: '#888' }}>Cancel</MenuItem>
+      </Menu>
       <EditAssetModal
         asset={editingAsset}
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSave={handleSave}
       />
-    </div>
+    </Box>
   );
 }
