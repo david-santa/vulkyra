@@ -1,6 +1,19 @@
 import React, { useEffect, useState } from 'react';
+import {
+  Box,
+  Typography,
+  Table,
+  TableHead,
+  TableRow,
+  TableCell,
+  TableBody,
+  Paper,
+} from '@mui/material';
+import { RichTreeView } from '@mui/x-tree-view/RichTreeView';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-export default function TeamsPage({token}) {
+export default function TeamsPage({ token }) {
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -12,100 +25,91 @@ export default function TeamsPage({token}) {
         'Content-Type': 'application/json'
       }
     })
-    .then(res => {
-      if(!res.ok) throw new Error('Failed to fetch teams')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch teams');
         return res.json();
-    })
+      })
       .then(data => {
         setTeams(Array.isArray(data) ? data : []);
         setLoading(false);
       })
-      .catch(err =>{
+      .catch(err => {
         setError(err.message);
         setLoading(false);
       });
-  }, []);
+  }, [token]);
 
-  // Find parent name helper
-  const getParentName = (parentId) => {
-    if (!parentId) return <span style={{ color: '#888' }}>ROOT</span>;
-    const parent = teams.find(t => t.id === parentId);
-    return parent ? parent.name : <span style={{ color: '#888' }}>Unknown</span>;
-  };
-
-  // Build tree structure from flat array
-  const buildTeamTree = (teamsList) => {
-    const map = {};
-    teamsList.forEach(team => (map[team.id] = { ...team, children: [] }));
-    const roots = [];
-
-    teamsList.forEach(team => {
-      if (team.parent_id && map[team.parent_id]) {
-        map[team.parent_id].children.push(map[team.id]);
-      } else {
-        roots.push(map[team.id]);
-      }
-    });
-
-    return roots;
-  };
-
-  // Recursive rendering of tree
-  const renderTree = (nodes) => (
-    <ul className="teams-tree">
-      {nodes.map(node => (
-        <li key={node.id}>
-          <span className="team-node" style={{ fontWeight: node.parent_id == null ? 'bold' : 'normal' }}>
-            {node.name}
-            <span className="team-email">({node.email})</span>
-          </span>
-          {node.children && node.children.length > 0 && renderTree(node.children)}
-        </li>
-      ))}
-    </ul>
-  );
+  // Build RichTreeView-compatible structure
+  const buildTreeData = (teamsList) => {
+  const map = {};
+  teamsList.forEach(team => (map[team.id] = {
+    id: String(team.id),
+    label: `${team.name} (${team.email})`,  // <-- must be a string
+    children: []
+  }));
+  const roots = [];
+  teamsList.forEach(team => {
+    if (team.parent_id && map[team.parent_id]) {
+      map[team.parent_id].children.push(map[team.id]);
+    } else {
+      roots.push(map[team.id]);
+    }
+  });
+  return roots;
+};
 
   if (loading) return <div>Loading teams...</div>;
-  if (error) return <div style={{ color: 'red'}}> Error: {error} </div>
+  if (error) return <div style={{ color: 'red' }}> Error: {error} </div>;
 
-  const treeRoots = buildTeamTree(teams);
+  const treeData = buildTreeData(teams);
 
   return (
-    <div>
-      <h2>Teams</h2>
-      <table className="teams-table">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Email</th>
-            <th>Parent Team</th>
-          </tr>
-        </thead>
-        <tbody>
-          {teams.length === 0 ? (
-            <tr>
-              <td colSpan={3} style={{ textAlign: "center", color: "#888" }}>
-                No teams found.
-              </td>
-            </tr>
-          ) : (
-            teams.map(team => (
-              <tr key={team.id}>
-                <td data-label="Name">{team.name}</td>
-                <td data-label="Email">{team.email}</td>
-                <td data-label="Parent Team">{getParentName(team.parent_id)}</td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </table>
-
+    <Box sx={{ p: 3 }}>
+      <Typography variant="h4" sx={{ mb: 2 }}>Teams</Typography>
+      <Paper sx={{ mb: 4 }}>
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Parent Team</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {teams.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={3} sx={{ textAlign: "center", color: "#888" }}>
+                  No teams found.
+                </TableCell>
+              </TableRow>
+            ) : (
+              teams.map(team => (
+                <TableRow key={team.id}>
+                  <TableCell>{team.name}</TableCell>
+                  <TableCell>{team.email}</TableCell>
+                  <TableCell>
+                    {team.parent_id
+                      ? (teams.find(t => t.id === team.parent_id)?.name || <span style={{ color: '#888' }}>Unknown</span>)
+                      : <span style={{ color: '#888' }}>ROOT</span>
+                    }
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </Paper>
       {teams.length > 0 && (
-        <div className="teams-tree-container">
-          <h3 style={{ marginBottom: '0.5em' }}>Team Hierarchy</h3>
-            {renderTree(treeRoots)}
-        </div>
+        <Box className="teams-tree-container">
+          <Typography variant="h6" sx={{ mb: 1 }}>Team Hierarchy</Typography>
+          <RichTreeView
+            items={treeData}
+            defaultCollapseIcon={<ExpandMoreIcon />}
+            defaultExpandIcon={<ChevronRightIcon />}
+            sx={{ minHeight: 240, background: "transparent" }}
+          />
+        </Box>
       )}
-    </div>
+    </Box>
   );
 }
