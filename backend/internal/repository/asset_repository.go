@@ -24,6 +24,24 @@ func GetAllAssets() ([]models.Asset, error) {
 	return assets, nil
 }
 
+func GetAssetByID(id int) (models.Asset, error) {
+	var asset models.Asset
+
+	err := db.QueryRow("SELECT id, fqdn, ip, owner_id FROM assets WHERE id = $1", id).Scan(&asset.ID, &asset.FQDN, &asset.IP, &asset.OwnerID)
+	if err != nil {
+		return asset, err
+	}
+	return asset, nil
+}
+
+func UpdateAsset(id int, updated models.Asset) (models.Asset, error) {
+	_, err := db.Exec("UPDATE assets SET fqdn = $1, ip = $2, owner_id = $3 WHERE id = $4", updated.FQDN, updated.IP, updated.OwnerID, id)
+	if err != nil {
+		return updated, err
+	}
+	return GetAssetByID(id)
+}
+
 func InsertDummyAssets() error {
 	dummyAssets := []models.Asset{
 		{FQDN: "host1.example.com", IP: "10.0.0.1", OwnerID: 3},
