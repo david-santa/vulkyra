@@ -85,7 +85,7 @@ export default function App() {
         <Sidebar current={current} setCurrent={setCurrent} />
         {/* Main area grows to fill the rest */}
         <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <Topbar onLogout={handleLogout} token={token} />
+          <Topbar onLogout={handleLogout} token={token} theme={theme} toggleTheme={toggleTheme}/>
           <MainContent
             current={current}
             message={message}

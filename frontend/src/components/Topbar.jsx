@@ -5,15 +5,19 @@ import {
   Typography,
   Box,
   Button,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
+import Brightness4Icon from '@mui/icons-material/Brightness4';
+import Brightness7Icon from '@mui/icons-material/Brightness7';
 
-function Topbar({ onLogout, token }) {
+function Topbar({ onLogout, token, theme, toggleTheme }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:8080/api/me', {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json'
       }
     })
@@ -29,6 +33,12 @@ function Topbar({ onLogout, token }) {
           Vulkyra Platform
         </Typography>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          {/* Theme toggle button */}
+          <Tooltip title={`Switch to ${theme === 'dark' ? 'light' : 'dark'} mode`}>
+            <IconButton color="inherit" onClick={toggleTheme} sx={{ ml: 1 }}>
+              {theme === 'dark' ? <Brightness7Icon /> : <Brightness4Icon />}
+            </IconButton>
+          </Tooltip>
           {user && (
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', mr: 2 }}>
               <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
