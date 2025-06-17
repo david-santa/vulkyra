@@ -11,4 +11,6 @@ func RegisterAllRoutes(r *gin.Engine, protected *gin.RouterGroup) {
 	api.RegisterAssetRoutes(protected)
 	api.RegisterTeamRoutes(protected)
 	api.RegisterMeRoutes(protected)
+	api.RegisterNessusRoutes(protected)
+	api.RegisterVulnerabilitiesRoutes(protected)
 }

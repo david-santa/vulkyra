@@ -24,6 +24,8 @@ func main() {
 	db.Exec("DROP TABLE teams")
 	db.Exec("DROP TABLE assets")
 	db.Exec("DROP TABLE users")
+	db.Exec("DROP TABLE vulnerabilities")
+	db.Exec("TRUNCATE TABLE assets")
 
 	// Create table if not exists (for quick dev/demo)
 	db.Exec(`CREATE TABLE IF NOT EXISTS assets (
@@ -47,6 +49,25 @@ func main() {
 	password_hash VARCHAR(255) NOT NULL,
 	role VARCHAR(255)
 	)`)
+
+	db.Exec(`CREATE TABLE IF NOT EXISTS vulnerabilities (
+    id SERIAL PRIMARY KEY,
+    asset_id INTEGER REFERENCES assets(id),
+    plugin_id INTEGER,
+    plugin_name TEXT,
+    plugin_family TEXT,
+    port INTEGER,
+    protocol TEXT,
+    service TEXT,
+    severity INTEGER,
+    risk_factor TEXT,
+    description TEXT,
+    solution TEXT,
+    output TEXT,
+    cves TEXT[],
+    cvss_score FLOAT,
+    refs TEXT[]
+	);`)
 
 	repository.InsertDummyAssets()
 	repository.InsertDummyTeams()

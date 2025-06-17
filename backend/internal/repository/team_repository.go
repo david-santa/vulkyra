@@ -4,8 +4,6 @@ import (
 	"github.com/david-santa/vulkyra/backend/internal/models"
 )
 
-// No: var db *sql.DB   (already declared in this package!)
-
 func GetAllTeams() ([]models.Team, error) {
 	rows, err := db.Query("SELECT id, name, email, parent_id FROM teams")
 	if err != nil {
