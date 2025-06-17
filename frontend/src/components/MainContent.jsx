@@ -3,6 +3,7 @@ import { Box, Paper, Typography } from '@mui/material';
 import TeamsPage from '../pages/TeamsPage';
 import AssetsPage from '../pages/AssetsPage';
 import SettingsPage from '../pages/SettingsPage';
+import VulnerabilitiesPage from '../pages/VulnerabilitiesPage';
 
 export default function MainContent({ current, message, theme, toggleTheme, token }) {
   return (
@@ -28,11 +29,7 @@ export default function MainContent({ current, message, theme, toggleTheme, toke
       )}
       {current === 'teams' && <TeamsPage token={token} />}
       {current === 'assets' && <AssetsPage token={token} />}
-      {current === 'vulnerabilities' && (
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h6">Vulnerabilities page (coming soon!)</Typography>
-        </Paper>
-      )}
+      {current === 'vulnerabilities' && <VulnerabilitiesPage token={token} />}
       {current === 'settings' && <SettingsPage theme={theme} toggleTheme={toggleTheme} />}
     </Box>
   );
