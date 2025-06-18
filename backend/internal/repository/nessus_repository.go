@@ -5,7 +5,6 @@ import (
 )
 
 func BulkInsertAssets(assets []models.Asset) error {
-	// TODO: Use transaction for bulk insert, or upsert as needed
 	for _, asset := range assets {
 		_, err := db.Exec("INSERT INTO assets (fqdn, ip, owner_id) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING",
 			asset.FQDN, asset.IP, asset.OwnerID)

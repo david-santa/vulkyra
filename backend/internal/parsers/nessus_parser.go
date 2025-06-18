@@ -68,7 +68,6 @@ func parseAndInsert(reader io.Reader) error {
 
 	for _, host := range data.Report.ReportHosts {
 		ip, fqdn := extractIPAndFQDN(host.HostTags)
-		fmt.Println("IP FOUND ", ip)
 		assetID, err := getOrCreateAsset(ip, fqdn)
 		if err != nil {
 			fmt.Printf("Could not create/find asset for IP: %s, FQDN: %s (err: %v)\n", ip, fqdn, err)
@@ -125,7 +124,7 @@ func getOrCreateAsset(ip, fqdn string) (int, error) {
 	}
 	// If not found, insert it and return the new id
 	err = repository.GetDB().QueryRow(`
-		INSERT INTO assets (ip, fqdn) VALUES ($1, $2) RETURNING id`, ip, fqdn).Scan(&id)
+		INSERT INTO assets (ip, fqdn, owner_id) VALUES ($1, $2, $3) RETURNING id`, ip, fqdn, 0).Scan(&id)
 	return id, err
 }
 
