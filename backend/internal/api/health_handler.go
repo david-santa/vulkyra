@@ -6,8 +6,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func RegisterHealthRoutes(r *gin.Engine) {
-	r.GET("/api/health", healthCheck)
+func RegisterHealthRoutes(r *gin.RouterGroup) {
+	r.GET("/health", healthCheck)
 }
 
 func healthCheck(c *gin.Context) {

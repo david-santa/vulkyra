@@ -7,7 +7,7 @@ import (
 )
 
 func RegisterAllRoutes(r *gin.Engine, protected *gin.RouterGroup) {
-	api.RegisterHealthRoutes(r)
+	api.RegisterHealthRoutes(protected)
 	api.RegisterAssetRoutes(protected)
 	api.RegisterTeamRoutes(protected)
 	api.RegisterMeRoutes(protected)
