@@ -21,6 +21,8 @@ func main() {
 		log.Fatal("failed to connect database: ", err)
 	}
 
+	db.Migrator().DropTable(&models.Asset{}, &models.Team{}, &models.User{}, &models.Vulnerability{})
+
 	// Auto-migrate all models (creates tables if not exist, updates fields)
 	if err := db.AutoMigrate(
 		&models.Team{},
