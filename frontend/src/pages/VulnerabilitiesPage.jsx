@@ -76,8 +76,8 @@ export default function VulnerabilitiesPage({ token }) {
 
   // DataGrid columns
   const columns = [
-    { field: 'asset_id', headerName: 'Asset ID', width: 90 },
-    { field: 'owner_id', headerName: 'Owner ID', width: 90 },
+    { field: 'asset_name', headerName: 'Asset Name', width: 90 },
+    { field: 'owner_name', headerName: 'Owner Name', width: 90 },
     { field: 'plugin_id', headerName: 'Plugin ID', width: 100 },
     { field: 'plugin_name', headerName: 'Plugin Name', width: 180, flex: 1 },
     { field: 'severity', headerName: 'Severity', width: 90 },
