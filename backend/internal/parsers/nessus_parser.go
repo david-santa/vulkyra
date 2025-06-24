@@ -134,12 +134,12 @@ func insertVulnerability(v models.Vulnerability) error {
 			asset_id, plugin_id, plugin_name, plugin_family,
 			port, protocol, service, severity,
 			risk_factor, description, solution, output,
-			cves, cvss_score, refs
+			cves, cvss_score, refs, owner_id
 		) VALUES (
 			$1, $2, $3, $4,
 			$5, $6, $7, $8,
 			$9, $10, $11, $12,
-			$13, $14, $15
+			$13, $14, $15, $16
 		)
 	`,
 		v.AssetID,
@@ -157,6 +157,7 @@ func insertVulnerability(v models.Vulnerability) error {
 		pq.Array(v.CVEs), // For TEXT[] columns, use pq.Array
 		v.CVSSScore,
 		pq.Array(v.Refs), // For TEXT[] columns, use pq.Array
+		int(1),
 	)
 	return err
 }

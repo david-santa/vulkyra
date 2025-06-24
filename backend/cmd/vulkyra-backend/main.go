@@ -21,11 +21,10 @@ func main() {
 	// Assign the DB instance to repository
 	repository.SetDB(db)
 
-	db.Exec("DROP TABLE teams")
-	db.Exec("DROP TABLE assets")
+	db.Exec("DROP TABLE teams CASCADE")
+	db.Exec("DROP TABLE assets CASCADE")
 	db.Exec("DROP TABLE users")
 	db.Exec("DROP TABLE vulnerabilities")
-	db.Exec("TRUNCATE TABLE assets")
 
 	// Create table if not exists (for quick dev/demo)
 	db.Exec(`CREATE TABLE IF NOT EXISTS assets (
@@ -66,7 +65,8 @@ func main() {
     output TEXT,
     cves TEXT[],
     cvss_score FLOAT,
-    refs TEXT[]
+    refs TEXT[],
+	owner_id INT REFERENCES teams(id)
 	);`)
 
 	repository.InsertDummyAssets()

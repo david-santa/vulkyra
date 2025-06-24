@@ -6,16 +6,11 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Paper,
   Typography,
-  IconButton,
   LinearProgress,
+  Paper
 } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
 
 export default function VulnerabilitiesPage({ token }) {
@@ -34,7 +29,14 @@ export default function VulnerabilitiesPage({ token }) {
     })
       .then(res => res.json())
       .then(data => {
-        setVulns(Array.isArray(data) ? data : []);
+        // Add "id" field for DataGrid (required!)
+        const gridData = Array.isArray(data)
+          ? data.map((v, i) => ({
+              id: v.id || `${v.asset_id}-${v.plugin_id}-${i}`,
+              ...v,
+            }))
+          : [];
+        setVulns(gridData);
         setFetching(false);
       })
       .catch(() => setFetching(false));
@@ -72,6 +74,37 @@ export default function VulnerabilitiesPage({ token }) {
     }
   };
 
+  // DataGrid columns
+  const columns = [
+    { field: 'asset_id', headerName: 'Asset ID', width: 90 },
+    { field: 'plugin_id', headerName: 'Plugin ID', width: 100 },
+    { field: 'plugin_name', headerName: 'Plugin Name', width: 180, flex: 1 },
+    { field: 'severity', headerName: 'Severity', width: 90 },
+    {
+      field: 'cves',
+      headerName: 'CVE(s)',
+      width: 160,
+      valueGetter: params =>
+        Array.isArray(params.value) ? params.value.join(', ') : params.value || '',
+      renderCell: params => (
+        <Typography variant="body2" noWrap title={params.value}>
+          {params.value}
+        </Typography>
+      ),
+    },
+    {
+      field: 'description',
+      headerName: 'Description',
+      minWidth: 200,
+      flex: 2,
+      renderCell: params => (
+        <Typography variant="body2" noWrap title={params.value}>
+          {params.value}
+        </Typography>
+      ),
+    },
+  ];
+
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
@@ -84,50 +117,18 @@ export default function VulnerabilitiesPage({ token }) {
           Import
         </Button>
       </Box>
-      <Paper>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>Asset ID</TableCell>
-              <TableCell>Plugin ID</TableCell>
-              <TableCell>Plugin Name</TableCell>
-              <TableCell>Severity</TableCell>
-              <TableCell>CVE(s)</TableCell>
-              <TableCell>Description</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {fetching ? (
-              <TableRow>
-                <TableCell colSpan={6}>
-                  <LinearProgress />
-                </TableCell>
-              </TableRow>
-            ) : vulns.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} align="center" sx={{ color: '#888' }}>
-                  No vulnerabilities found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              vulns.map(vuln => (
-                <TableRow key={vuln.id || `${vuln.asset_id}-${vuln.plugin_id}`}>
-                  <TableCell>{vuln.asset_id}</TableCell>
-                  <TableCell>{vuln.plugin_id}</TableCell>
-                  <TableCell>{vuln.plugin_name}</TableCell>
-                  <TableCell>{vuln.severity}</TableCell>
-                  <TableCell>{Array.isArray(vuln.cves) ? vuln.cves.join(', ') : vuln.cves}</TableCell>
-                  <TableCell>
-                    <Typography variant="body2" sx={{ maxWidth: 250 }} noWrap title={vuln.description}>
-                      {vuln.description}
-                    </Typography>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </Paper>
+      <Box component={Paper} sx={{ height: 520, width: '100%', mb: 3 }}>
+        <DataGrid
+          rows={vulns}
+          columns={columns}
+          loading={fetching}
+          disableRowSelectionOnClick
+          pageSize={25}
+          rowsPerPageOptions={[10, 25, 50]}
+          getRowId={(row) => row.id}
+          sx={{ bgcolor: 'background.paper' }}
+        />
+      </Box>
 
       {/* Import Nessus Modal */}
       <Dialog open={importOpen} onClose={() => setImportOpen(false)} maxWidth="xs" fullWidth>
