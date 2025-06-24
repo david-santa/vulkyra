@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -10,13 +10,9 @@ import {
   MenuItem,
   TextField,
   Typography,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
   Paper,
 } from '@mui/material';
+import { DataGrid } from '@mui/x-data-grid';
 
 function EditAssetModal({ asset, open, onClose, onSave }) {
   const [fqdn, setFqdn] = useState('');
@@ -25,9 +21,9 @@ function EditAssetModal({ asset, open, onClose, onSave }) {
 
   useEffect(() => {
     if (asset) {
-      setFqdn(asset.fqdn || '');
-      setIp(asset.ip_address || '');
-      setOwnerId(asset.owner_id || '');
+      setFqdn(asset.FQDN || '');
+      setIp(asset.IPAddress || '');
+      setOwnerId(asset.OwnerID || '');
     }
   }, [asset]);
 
@@ -35,9 +31,9 @@ function EditAssetModal({ asset, open, onClose, onSave }) {
     e.preventDefault();
     onSave({
       ...asset,
-      fqdn,
-      ip_address: ip,
-      owner_id: ownerId,
+      FQDN: fqdn,
+      IPAddress: ip,
+      OwnerID: ownerId,
     });
   };
 
@@ -93,6 +89,14 @@ export default function AssetsPage({ token }) {
       .then(setAssets);
   }, [token]);
 
+  // DataGrid columns using PascalCase keys
+  const columns = useMemo(() => [
+    { field: 'AssetID', headerName: 'ID', minWidth: 120, flex: 1 },
+    { field: 'FQDN', headerName: 'FQDN', minWidth: 180, flex: 2 },
+    { field: 'IPAddress', headerName: 'IP Address', minWidth: 150, flex: 2 },
+    { field: 'OwnerID', headerName: 'Owner ID', minWidth: 220, flex: 2 },
+  ], []);
+
   const handleContextMenu = (event, asset) => {
     event.preventDefault();
     setContextAsset(asset);
@@ -103,7 +107,7 @@ export default function AssetsPage({ token }) {
   };
 
   const handleSave = (updatedAsset) => {
-    fetch(`http://localhost:8080/api/assets/${updatedAsset.id}`, {
+    fetch(`http://localhost:8080/api/assets/${updatedAsset.AssetID}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -113,7 +117,7 @@ export default function AssetsPage({ token }) {
     })
       .then(res => res.json())
       .then(saved => {
-        setAssets(assets.map(a => a.id === saved.id ? saved : a));
+        setAssets(assets.map(a => a.AssetID === saved.AssetID ? saved : a));
         setModalOpen(false);
       });
   };
@@ -132,31 +136,18 @@ export default function AssetsPage({ token }) {
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" sx={{ mb: 2 }}>Assets</Typography>
       <Paper>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>FQDN</TableCell>
-              <TableCell>IP Address</TableCell>
-              <TableCell>Owner ID</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {assets.map(asset => (
-              <TableRow
-                key={asset.id}
-                onContextMenu={e => handleContextMenu(e, asset)}
-                hover
-                sx={{ cursor: 'context-menu' }}
-              >
-                <TableCell>{asset.id}</TableCell>
-                <TableCell>{asset.fqdn}</TableCell>
-                <TableCell>{asset.ip_address}</TableCell>
-                <TableCell>{asset.owner_id}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div style={{ height: 450, width: '100%' }}>
+          <DataGrid
+            rows={assets}
+            columns={columns}
+            getRowId={row => row.AssetID}
+            pageSize={10}
+            rowsPerPageOptions={[10, 20]}
+            disableRowSelectionOnClick
+            autoHeight={false}
+            onRowContextMenu={(params, event) => handleContextMenu(event, params.row)}
+          />
+        </div>
       </Paper>
       <Menu
         open={Boolean(menuPosition)}

@@ -37,25 +37,25 @@ export default function TeamsPage({ token }) {
       });
   }, [token]);
 
-  // Map of team_id -> team_name for quick lookup
+  // Map of TeamID -> TeamName for quick lookup
   const parentMap = useMemo(() => {
     const map = {};
-    for (const t of teams) map[t.team_id] = t.team_name;
+    for (const t of teams) map[t.TeamID] = t.TeamName;
     return map;
   }, [teams]);
 
-  // DataGrid columns using new field names
+  // DataGrid columns using PascalCase field names
   const columns = useMemo(() => [
-    { field: 'team_name', headerName: 'Name', flex: 1, minWidth: 140 },
-    { field: 'team_email', headerName: 'Email', flex: 1, minWidth: 200 },
+    { field: 'TeamName', headerName: 'Name', flex: 1, minWidth: 140 },
+    { field: 'TeamEmail', headerName: 'Email', flex: 1, minWidth: 200 },
     {
-      field: 'parent_id',
+      field: 'ParentID',
       headerName: 'Parent Team',
       flex: 1,
       minWidth: 160,
       renderCell: (params) => {
         if (!params || !params.row) return null;
-        const parentId = params.row.parent_id;
+        const parentId = params.row.ParentID;
         if (!parentId) return <span style={{ color: '#888' }}>ROOT</span>;
         const parentName = parentMap[parentId];
         return parentName
@@ -65,20 +65,20 @@ export default function TeamsPage({ token }) {
     },
   ], [parentMap]);
 
-  // Build RichTreeView-compatible structure using new field names
+  // Build RichTreeView-compatible structure using PascalCase field names
   const buildTreeData = (teamsList) => {
     const map = {};
-    teamsList.forEach(team => (map[team.team_id] = {
-      id: String(team.team_id),
-      label: `${team.team_name} (${team.team_email})`,
+    teamsList.forEach(team => (map[team.TeamID] = {
+      id: String(team.TeamID),
+      label: `${team.TeamName} (${team.TeamEmail})`,
       children: []
     }));
     const roots = [];
     teamsList.forEach(team => {
-      if (team.parent_id && map[team.parent_id]) {
-        map[team.parent_id].children.push(map[team.team_id]);
+      if (team.ParentID && map[team.ParentID]) {
+        map[team.ParentID].children.push(map[team.TeamID]);
       } else {
-        roots.push(map[team.team_id]);
+        roots.push(map[team.TeamID]);
       }
     });
     return roots;
@@ -97,7 +97,7 @@ export default function TeamsPage({ token }) {
           <DataGrid
             rows={teams}
             columns={columns}
-            getRowId={row => row.team_id}
+            getRowId={row => row.TeamID}
             pageSize={10}
             rowsPerPageOptions={[10, 20]}
             disableRowSelectionOnClick
