@@ -10,12 +10,18 @@ import {
 } from '@mui/material';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
+import { fetchWithAuth } from '../utils/api';
+
+
 
 function Topbar({ onLogout, token, theme, toggleTheme }) {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/me', {
+    if (!token) return;
+    fetchWithAuth('http://localhost:8080/api/me', {
+      token,
+      handleLogout: onLogout,
       headers: {
         Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json'
@@ -24,7 +30,7 @@ function Topbar({ onLogout, token, theme, toggleTheme }) {
       .then(res => res.json())
       .then(data => setUser(data))
       .catch(() => setUser(null));
-  }, [token]);
+  }, [token, onLogout]);
 
   return (
     <AppBar position="static" elevation={0} color="primary">

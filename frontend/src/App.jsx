@@ -3,29 +3,9 @@ import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
 import MainContent from './components/MainContent';
 import LoginPage from './pages/LoginPage';
-
 // MUI theme imports
 import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material';
-
-const fetchWithAuth = (url, options = {}) => {
-  const token = localStorage.getItem('token');
-  const headers = {
-    ...(options.headers || {}),
-    Authorization: `Bearer ${token}`,
-    'Content-Type': 'application/json'
-  };
-
-  return fetch(url, { ...options, headers })
-    .then(async res => {
-      if (res.status === 401 || res.status === 403) {
-        // Unauthorized, force logout
-        handleLogout(); // You may need to pass this as a prop/context
-        throw new Error('Unauthorized');
-      }
-      // Optional: handle other error statuses
-      return res;
-    });
-};
+import { fetchWithAuth } from './utils/api';
 
 // Your color palettes
 const lightPalette = {
@@ -50,6 +30,15 @@ export default function App() {
   const [current, setCurrent] = useState('dashboard');
   const [theme, setTheme] = useState('dark');
 
+    const handleLogin = (tok) => {
+    setToken(tok);
+    localStorage.setItem('token', tok);
+  };
+  const handleLogout = () => {
+    setToken('');
+    localStorage.removeItem('token');
+  };
+
   // Set body class for your own CSS
   useEffect(() => {
     if (token) {
@@ -58,25 +47,19 @@ export default function App() {
     }
   }, [theme, token]);
 
-  useEffect(() => {
-    if (!token) return;
-    document.title = 'Vulkyra Platform';
-    fetchWithAuth('http://localhost:8080/api/health', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => setMessage(data.status))
-      .catch(() => setMessage('API not reachable'));
-  }, [token]);
+useEffect(() => {
+  if (!token) return;
+  document.title = 'Vulkyra Platform';
+  fetchWithAuth('http://localhost:8080/api/health', {
+    token,
+    handleLogout: handleLogout, // pass your logout handler
+    headers: { Authorization: `Bearer ${token}` }
+  })
+    .then(res => res.json())
+    .then(data => setMessage(data.status))
+    .catch(() => setMessage('API not reachable'));
+}, [token, handleLogout]);
 
-  const handleLogin = (tok) => {
-    setToken(tok);
-    localStorage.setItem('token', tok);
-  };
-  const handleLogout = () => {
-    setToken('');
-    localStorage.removeItem('token');
-  };
   const toggleTheme = () => setTheme(prev => (prev === 'dark' ? 'light' : 'dark'));
 
   // Create the MUI theme (only changes palette for MUI components)
