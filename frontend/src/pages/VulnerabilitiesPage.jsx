@@ -7,8 +7,7 @@ import {
   DialogContent,
   DialogActions,
   Typography,
-  LinearProgress,
-  Paper
+  Paper,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
@@ -29,10 +28,10 @@ export default function VulnerabilitiesPage({ token }) {
     })
       .then(res => res.json())
       .then(data => {
-        // Add "id" field for DataGrid (required!)
+        // Use VulnID or fallback for unique row id
         const gridData = Array.isArray(data)
           ? data.map((v, i) => ({
-              id: v.id || `${v.asset_id}-${v.plugin_id}-${i}`,
+              id: v.VulnID || `${v.AssetID}-${v.PluginID}-${i}`,
               ...v,
             }))
           : [];
@@ -74,27 +73,28 @@ export default function VulnerabilitiesPage({ token }) {
     }
   };
 
-  // DataGrid columns
+  // DataGrid columns (PascalCase for backend consistency)
   const columns = [
-    { field: 'asset_name', headerName: 'Asset Name', width: 90 },
-    { field: 'owner_name', headerName: 'Owner Name', width: 90 },
-    { field: 'plugin_id', headerName: 'Plugin ID', width: 100 },
-    { field: 'plugin_name', headerName: 'Plugin Name', width: 180, flex: 1 },
-    { field: 'severity', headerName: 'Severity', width: 90 },
+    { field: 'AssetName', headerName: 'Asset Name', minWidth: 140, flex: 1 },
+    { field: 'OwnerName', headerName: 'Owner Name', minWidth: 140, flex: 1 },
+    { field: 'PluginID', headerName: 'Plugin ID', width: 100 },
+    { field: 'PluginName', headerName: 'Plugin Name', minWidth: 180, flex: 1 },
+    { field: 'Severity', headerName: 'Severity', width: 90 },
     {
-      field: 'cves',
+      field: 'CVEs',
       headerName: 'CVE(s)',
-      width: 160,
+      minWidth: 160,
+      flex: 1,
       valueGetter: params =>
         Array.isArray(params.value) ? params.value.join(', ') : params.value || '',
       renderCell: params => (
-        <Typography variant="body2" noWrap title={params.value}>
-          {params.value}
+        <Typography variant="body2" noWrap title={Array.isArray(params.value) ? params.value.join(', ') : params.value}>
+          {Array.isArray(params.value) ? params.value.join(', ') : params.value}
         </Typography>
       ),
     },
     {
-      field: 'description',
+      field: 'Description',
       headerName: 'Description',
       minWidth: 200,
       flex: 2,
