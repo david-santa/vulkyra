@@ -6,6 +6,7 @@ import (
 
 	"github.com/david-santa/vulkyra/backend/cmd/auth"
 	"github.com/david-santa/vulkyra/backend/internal/models"
+	"github.com/david-santa/vulkyra/backend/internal/repository"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
@@ -30,9 +31,9 @@ func main() {
 		log.Fatal("failed to migrate database: ", err)
 	}
 
-	// repository.InsertDummyAssetsGORM(db)
-	// repository.InsertDummyTeamsGORM(db)
-	// repository.InsertDummyUsersGORM(db)
+	repository.InsertDummyUsers()
+	repository.InsertDummyAssets(db)
+	repository.InsertDummyTeams(db)
 
 	r := gin.Default()
 

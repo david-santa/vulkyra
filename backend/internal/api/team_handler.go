@@ -5,6 +5,7 @@ import (
 
 	"github.com/david-santa/vulkyra/backend/internal/service"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func RegisterTeamRoutes(r *gin.RouterGroup) {
@@ -12,7 +13,9 @@ func RegisterTeamRoutes(r *gin.RouterGroup) {
 }
 
 func getAllTeams(c *gin.Context) {
-	teams, err := service.GetAllTeams()
+	db := c.MustGet("db").(*gorm.DB)
+
+	teams, err := service.GetAllTeams(db)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
