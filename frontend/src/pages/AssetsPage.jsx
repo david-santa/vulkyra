@@ -6,11 +6,10 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Menu,
-  MenuItem,
   TextField,
   Typography,
   Paper,
+  Stack,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 
@@ -78,9 +77,6 @@ export default function AssetsPage({ token }) {
   const [editingAsset, setEditingAsset] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  const [contextAsset, setContextAsset] = useState(null);
-  const [menuPosition, setMenuPosition] = useState(null);
-
   useEffect(() => {
     fetch('http://localhost:8080/api/assets', {
       headers: { Authorization: `Bearer ${token}` }
@@ -89,21 +85,9 @@ export default function AssetsPage({ token }) {
       .then(setAssets);
   }, [token]);
 
-  // DataGrid columns using PascalCase keys
-  const columns = useMemo(() => [
-    { field: 'AssetID', headerName: 'ID', minWidth: 120, flex: 1 },
-    { field: 'FQDN', headerName: 'FQDN', minWidth: 180, flex: 2 },
-    { field: 'IPAddress', headerName: 'IP Address', minWidth: 150, flex: 2 },
-    { field: 'OwnerID', headerName: 'Owner ID', minWidth: 220, flex: 2 },
-  ], []);
-
-  const handleContextMenu = (event, asset) => {
-    event.preventDefault();
-    setContextAsset(asset);
-    setMenuPosition({
-      mouseX: event.clientX + 2,
-      mouseY: event.clientY - 6,
-    });
+  const handleEditClick = (asset) => {
+    setEditingAsset(asset);
+    setModalOpen(true);
   };
 
   const handleSave = (updatedAsset) => {
@@ -122,15 +106,31 @@ export default function AssetsPage({ token }) {
       });
   };
 
-  const handleMenuClose = () => {
-    setMenuPosition(null);
-  };
-
-  const handleEdit = () => {
-    setEditingAsset(contextAsset);
-    setModalOpen(true);
-    setMenuPosition(null);
-  };
+  const columns = useMemo(() => [
+    { field: 'AssetID', headerName: 'ID', minWidth: 120, flex: 1 },
+    { field: 'FQDN', headerName: 'FQDN', minWidth: 180, flex: 2 },
+    { field: 'IPAddress', headerName: 'IP Address', minWidth: 150, flex: 2 },
+    { field: 'OwnerID', headerName: 'Owner ID', minWidth: 220, flex: 2 },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      minWidth: 120,
+      flex: 1,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <Stack direction="row" spacing={1}>
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => handleEditClick(params.row)}
+          >
+            Edit
+          </Button>
+        </Stack>
+      ),
+    },
+  ], [assets]);
 
   return (
     <Box sx={{ p: 3 }}>
@@ -145,23 +145,9 @@ export default function AssetsPage({ token }) {
             rowsPerPageOptions={[10, 20]}
             disableRowSelectionOnClick
             autoHeight={false}
-            onRowContextMenu={(params, event) => handleContextMenu(event, params.row)}
           />
         </div>
       </Paper>
-      <Menu
-        open={Boolean(menuPosition)}
-        onClose={handleMenuClose}
-        anchorReference="anchorPosition"
-        anchorPosition={
-          menuPosition !== null
-            ? { top: menuPosition.mouseY, left: menuPosition.mouseX }
-            : undefined
-        }
-      >
-        <MenuItem onClick={handleEdit}>Edit</MenuItem>
-        <MenuItem onClick={handleMenuClose} sx={{ color: '#888' }}>Cancel</MenuItem>
-      </Menu>
       <EditAssetModal
         asset={editingAsset}
         open={modalOpen}

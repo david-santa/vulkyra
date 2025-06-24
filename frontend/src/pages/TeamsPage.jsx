@@ -112,6 +112,7 @@ export default function TeamsPage({ token }) {
             items={treeData}
             defaultCollapseIcon={<ExpandMoreIcon />}
             defaultExpandIcon={<ChevronRightIcon />}
+            defaultExpandedItems={treeData}
             sx={{ minHeight: 240, background: 'transparent' }}
           />
         </Box>
