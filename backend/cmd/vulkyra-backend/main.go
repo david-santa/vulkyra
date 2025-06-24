@@ -31,7 +31,7 @@ func main() {
 		log.Fatal("failed to migrate database: ", err)
 	}
 
-	repository.InsertDummyUsers()
+	repository.InsertDummyUsers(db)
 	repository.InsertDummyAssets(db)
 	repository.InsertDummyTeams(db)
 
