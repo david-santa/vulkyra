@@ -15,21 +15,18 @@ import {
   TableRow,
   TableCell,
   TableBody,
-  Paper
+  Paper,
 } from '@mui/material';
-
-
 
 function EditAssetModal({ asset, open, onClose, onSave }) {
   const [fqdn, setFqdn] = useState('');
   const [ip, setIp] = useState('');
   const [ownerId, setOwnerId] = useState('');
-  
 
   useEffect(() => {
     if (asset) {
       setFqdn(asset.fqdn || '');
-      setIp(asset.ip || '');
+      setIp(asset.ip_address || '');
       setOwnerId(asset.owner_id || '');
     }
   }, [asset]);
@@ -39,7 +36,7 @@ function EditAssetModal({ asset, open, onClose, onSave }) {
     onSave({
       ...asset,
       fqdn,
-      ip,
+      ip_address: ip,
       owner_id: ownerId,
     });
   };
@@ -57,7 +54,7 @@ function EditAssetModal({ asset, open, onClose, onSave }) {
             margin="normal"
           />
           <TextField
-            label="IP"
+            label="IP Address"
             value={ip}
             onChange={e => setIp(e.target.value)}
             fullWidth
@@ -85,9 +82,8 @@ export default function AssetsPage({ token }) {
   const [editingAsset, setEditingAsset] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Context Menu state
   const [contextAsset, setContextAsset] = useState(null);
-   const [menuPosition, setMenuPosition] = useState(null);
+  const [menuPosition, setMenuPosition] = useState(null);
 
   useEffect(() => {
     fetch('http://localhost:8080/api/assets', {
@@ -98,13 +94,13 @@ export default function AssetsPage({ token }) {
   }, [token]);
 
   const handleContextMenu = (event, asset) => {
-  event.preventDefault();
-  setContextAsset(asset);
-  setMenuPosition({
-    mouseX: event.clientX + 2,
-    mouseY: event.clientY - 6,
-  });
-};
+    event.preventDefault();
+    setContextAsset(asset);
+    setMenuPosition({
+      mouseX: event.clientX + 2,
+      mouseY: event.clientY - 6,
+    });
+  };
 
   const handleSave = (updatedAsset) => {
     fetch(`http://localhost:8080/api/assets/${updatedAsset.id}`, {
@@ -123,14 +119,14 @@ export default function AssetsPage({ token }) {
   };
 
   const handleMenuClose = () => {
-  setMenuPosition(null);
-};
+    setMenuPosition(null);
+  };
 
-const handleEdit = () => {
-  setEditingAsset(contextAsset);
-  setModalOpen(true);
-  setMenuPosition(null);
-};
+  const handleEdit = () => {
+    setEditingAsset(contextAsset);
+    setModalOpen(true);
+    setMenuPosition(null);
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -155,7 +151,7 @@ const handleEdit = () => {
               >
                 <TableCell>{asset.id}</TableCell>
                 <TableCell>{asset.fqdn}</TableCell>
-                <TableCell>{asset.ip}</TableCell>
+                <TableCell>{asset.ip_address}</TableCell>
                 <TableCell>{asset.owner_id}</TableCell>
               </TableRow>
             ))}

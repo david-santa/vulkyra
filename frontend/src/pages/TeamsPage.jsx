@@ -37,17 +37,17 @@ export default function TeamsPage({ token }) {
       });
   }, [token]);
 
-  // Map of id -> name for quick lookup
+  // Map of team_id -> team_name for quick lookup
   const parentMap = useMemo(() => {
     const map = {};
-    for (const t of teams) map[t.id] = t.name;
+    for (const t of teams) map[t.team_id] = t.team_name;
     return map;
   }, [teams]);
 
-  // DataGrid columns (ALL logic inside renderCell to avoid undefined params/row)
+  // DataGrid columns using new field names
   const columns = useMemo(() => [
-    { field: 'name', headerName: 'Name', flex: 1, minWidth: 140 },
-    { field: 'email', headerName: 'Email', flex: 1, minWidth: 200 },
+    { field: 'team_name', headerName: 'Name', flex: 1, minWidth: 140 },
+    { field: 'team_email', headerName: 'Email', flex: 1, minWidth: 200 },
     {
       field: 'parent_id',
       headerName: 'Parent Team',
@@ -65,20 +65,20 @@ export default function TeamsPage({ token }) {
     },
   ], [parentMap]);
 
-  // Build RichTreeView-compatible structure
+  // Build RichTreeView-compatible structure using new field names
   const buildTreeData = (teamsList) => {
     const map = {};
-    teamsList.forEach(team => (map[team.id] = {
-      id: String(team.id),
-      label: `${team.name} (${team.email})`,
+    teamsList.forEach(team => (map[team.team_id] = {
+      id: String(team.team_id),
+      label: `${team.team_name} (${team.team_email})`,
       children: []
     }));
     const roots = [];
     teamsList.forEach(team => {
       if (team.parent_id && map[team.parent_id]) {
-        map[team.parent_id].children.push(map[team.id]);
+        map[team.parent_id].children.push(map[team.team_id]);
       } else {
-        roots.push(map[team.id]);
+        roots.push(map[team.team_id]);
       }
     });
     return roots;
@@ -97,7 +97,7 @@ export default function TeamsPage({ token }) {
           <DataGrid
             rows={teams}
             columns={columns}
-            getRowId={row => row.id}
+            getRowId={row => row.team_id}
             pageSize={10}
             rowsPerPageOptions={[10, 20]}
             disableRowSelectionOnClick
