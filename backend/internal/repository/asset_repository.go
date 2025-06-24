@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"log"
+
 	"github.com/david-santa/vulkyra/backend/internal/models"
 	"gorm.io/gorm"
 )
@@ -33,9 +35,14 @@ func UpdateAsset(db *gorm.DB, id string, updated models.Asset) (models.Asset, er
 }
 
 func InsertDummyAssets(db *gorm.DB) error {
+
+	var team models.Team
+	if err := db.Where("team_name = ?", "Unassigned Vulnerabilities").First(&team).Error; err != nil {
+		log.Fatal("No team found for asset owner:", err)
+	}
 	dummyAssets := []models.Asset{
-		{FQDN: "host1.vulkyra.com", IPAddress: "10.0.0.1"},
-		{FQDN: "host2.vulkyra.com", IPAddress: "10.0.0.2"},
+		{FQDN: "host1.vulkyra.com", IPAddress: "10.0.0.1", OwnerID: team.TeamID},
+		{FQDN: "host2.vulkyra.com", IPAddress: "10.0.0.2", OwnerID: team.TeamID},
 	}
 	return db.Create(&dummyAssets).Error
 }

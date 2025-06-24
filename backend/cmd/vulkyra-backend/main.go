@@ -34,8 +34,8 @@ func main() {
 	}
 
 	repository.InsertDummyUsers(db)
-	repository.InsertDummyAssets(db)
 	repository.InsertDummyTeams(db)
+	repository.InsertDummyAssets(db)
 
 	r := gin.Default()
 

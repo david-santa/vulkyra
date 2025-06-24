@@ -22,7 +22,7 @@ func InsertDummyTeams(db *gorm.DB) error {
 
 	// Set nil where no parent exists
 	dummy := []models.Team{
-		{TeamID: teamIDs[1], TeamName: "Unassigned Vulnerabilities", TeamEmail: "noreply@vulkyra.com", ParentID: nil},
+		{TeamID: uuid.Nil, TeamName: "Unassigned Vulnerabilities", TeamEmail: "noreply@vulkyra.com", ParentID: nil},
 		{TeamID: teamIDs[2], TeamName: "Vulkyra CEO", TeamEmail: "ceo@vulkyra.com", ParentID: nil},
 		{TeamID: teamIDs[3], TeamName: "Security", TeamEmail: "security@vulkyra.com", ParentID: &teamIDs[2]},
 		{TeamID: teamIDs[4], TeamName: "Engineering", TeamEmail: "engineering@vulkyra.com", ParentID: &teamIDs[2]},
