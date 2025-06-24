@@ -7,6 +7,26 @@ import LoginPage from './pages/LoginPage';
 // MUI theme imports
 import { ThemeProvider, createTheme, CssBaseline, Box } from '@mui/material';
 
+const fetchWithAuth = (url, options = {}) => {
+  const token = localStorage.getItem('token');
+  const headers = {
+    ...(options.headers || {}),
+    Authorization: `Bearer ${token}`,
+    'Content-Type': 'application/json'
+  };
+
+  return fetch(url, { ...options, headers })
+    .then(async res => {
+      if (res.status === 401 || res.status === 403) {
+        // Unauthorized, force logout
+        handleLogout(); // You may need to pass this as a prop/context
+        throw new Error('Unauthorized');
+      }
+      // Optional: handle other error statuses
+      return res;
+    });
+};
+
 // Your color palettes
 const lightPalette = {
   mode: 'light',
@@ -41,7 +61,7 @@ export default function App() {
   useEffect(() => {
     if (!token) return;
     document.title = 'Vulkyra Platform';
-    fetch('http://localhost:8080/api/health', {
+    fetchWithAuth('http://localhost:8080/api/health', {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(res => res.json())
