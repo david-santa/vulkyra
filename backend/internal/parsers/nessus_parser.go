@@ -129,6 +129,7 @@ func extractIPAndFQDN(tags []HostTag) (ip, fqdn string) {
 // Uses GORM and UUIDs!
 func getOrCreateAssetGORM(db *gorm.DB, ip, fqdn string) (uuid.UUID, error) {
 	var asset models.Asset
+	var unassingedVulnerabilitiesTeam models.Team
 	result := db.Where("ip_address = ? OR fqdn = ?", ip, fqdn).First(&asset)
 	if result.Error == nil {
 		return asset.AssetID, nil
@@ -136,10 +137,15 @@ func getOrCreateAssetGORM(db *gorm.DB, ip, fqdn string) (uuid.UUID, error) {
 	if result.Error != gorm.ErrRecordNotFound {
 		return uuid.Nil, result.Error
 	}
+	teamQueryResult := db.Where("team_name = ?", "Unassigned Vulnerabilities").First(&unassingedVulnerabilitiesTeam)
+	if teamQueryResult != nil {
+		fmt.Println("Failed to get unassigned vulnerabilities team UUID")
+	}
+
 	asset = models.Asset{
 		FQDN:      fqdn,
 		IPAddress: ip,
-		// Set other fields or OwnerID as needed
+		OwnerID:   unassingedVulnerabilitiesTeam.TeamID,
 	}
 	if err := db.Create(&asset).Error; err != nil {
 		return uuid.Nil, err
