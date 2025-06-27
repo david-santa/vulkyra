@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/david-santa/vulkyra/backend/internal/models"
+	"github.com/david-santa/vulkyra/backend/internal/ownership"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -129,7 +130,6 @@ func extractIPAndFQDN(tags []HostTag) (ip, fqdn string) {
 // Uses GORM and UUIDs!
 func getOrCreateAssetGORM(db *gorm.DB, ip, fqdn string) (uuid.UUID, error) {
 	var asset models.Asset
-	var unassingedVulnerabilitiesTeam models.Team
 	result := db.Where("ip_address = ? OR fqdn = ?", ip, fqdn).First(&asset)
 	if result.Error == nil {
 		return asset.AssetID, nil
@@ -137,15 +137,13 @@ func getOrCreateAssetGORM(db *gorm.DB, ip, fqdn string) (uuid.UUID, error) {
 	if result.Error != gorm.ErrRecordNotFound {
 		return uuid.Nil, result.Error
 	}
-	teamQueryResult := db.Where("team_name = ?", "Unassigned Vulnerabilities").First(&unassingedVulnerabilitiesTeam)
-	if teamQueryResult != nil {
-		fmt.Println("Failed to get unassigned vulnerabilities team UUID")
-	}
+
+	ownerId := ownership.AssignAssetOwnershipBasedOnIP(db, ip)
 
 	asset = models.Asset{
 		FQDN:      fqdn,
 		IPAddress: ip,
-		OwnerID:   unassingedVulnerabilitiesTeam.TeamID,
+		OwnerID:   ownerId,
 	}
 	if err := db.Create(&asset).Error; err != nil {
 		return uuid.Nil, err

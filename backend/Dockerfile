@@ -9,5 +9,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
+COPY ./internal/ownership/static_ownership_ip.csv /app/internal/ownership/static_ownership_ip.csv
+
 
 CMD ["air"]
