@@ -75,36 +75,44 @@ export default function VulnerabilitiesPage({ token }) {
 
   // DataGrid columns (PascalCase for backend consistency)
   const columns = [
-    { field: 'AssetName', headerName: 'Asset Name', minWidth: 140, flex: 1 },
-    { field: 'OwnerName', headerName: 'Owner Name', minWidth: 140, flex: 1 },
-    { field: 'PluginID', headerName: 'Plugin ID', width: 100 },
-    { field: 'PluginName', headerName: 'Plugin Name', minWidth: 180, flex: 1 },
-    { field: 'Severity', headerName: 'Severity', width: 90 },
-    {
-      field: 'CVEs',
-      headerName: 'CVE(s)',
-      minWidth: 160,
-      flex: 1,
-      valueGetter: params =>
-        Array.isArray(params.value) ? params.value.join(', ') : params.value || '',
-      renderCell: params => (
-        <Typography variant="body2" noWrap title={Array.isArray(params.value) ? params.value.join(', ') : params.value}>
-          {Array.isArray(params.value) ? params.value.join(', ') : params.value}
-        </Typography>
-      ),
+  { field: 'asset_name', headerName: 'Asset Name', minWidth: 140, flex: 1 },
+  { field: 'owner_name', headerName: 'Owner Name', minWidth: 140, flex: 1 },
+  { field: 'plugin_id', headerName: 'Plugin ID', width: 100 },
+  { field: 'plugin_name', headerName: 'Plugin Name', minWidth: 180, flex: 1 },
+  { field: 'severity', headerName: 'Severity', width: 90 },
+  {
+    field: 'cves',
+    headerName: 'CVE(s)',
+    minWidth: 160,
+    flex: 1,
+    valueGetter: (params) => {
+      const cves = params?.row?.cves;
+      if (Array.isArray(cves)) return cves.join(', ');
+      if (typeof cves === "string") return cves;
+      return '';
     },
-    {
-      field: 'Description',
-      headerName: 'Description',
-      minWidth: 200,
-      flex: 2,
-      renderCell: params => (
-        <Typography variant="body2" noWrap title={params.value}>
-          {params.value}
+    renderCell: (params) => {
+      const cves = params?.row?.cves;
+      const display = Array.isArray(cves) ? cves.join(', ') : (typeof cves === "string" ? cves : '');
+      return (
+        <Typography variant="body2" noWrap title={display}>
+          {display}
         </Typography>
-      ),
+      );
     },
-  ];
+  },
+  {
+    field: 'description',
+    headerName: 'Description',
+    minWidth: 200,
+    flex: 2,
+    renderCell: params => (
+      <Typography variant="body2" noWrap title={params.value}>
+        {params.value}
+      </Typography>
+    ),
+  },
+];
 
   return (
     <Box sx={{ p: 3 }}>
