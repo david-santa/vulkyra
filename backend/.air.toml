@@ -1,0 +1,13 @@
+# Minimal config for air hot reload
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "go build -o ./tmp/main ./cmd/vulkyra-backend"
+  bin = "tmp/main"
+  include_ext = ["go", "tpl", "tmpl", "html"]
+  exclude_dir = ["tmp", "vendor"]
+
+[log]
+  color = "auto"
+  time = true

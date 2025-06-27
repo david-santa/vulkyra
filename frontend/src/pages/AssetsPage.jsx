@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -6,31 +6,23 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  Menu,
-  MenuItem,
   TextField,
   Typography,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  Paper
+  Paper,
+  Stack,
 } from '@mui/material';
-
-
+import { DataGrid } from '@mui/x-data-grid';
 
 function EditAssetModal({ asset, open, onClose, onSave }) {
   const [fqdn, setFqdn] = useState('');
   const [ip, setIp] = useState('');
   const [ownerId, setOwnerId] = useState('');
-  
 
   useEffect(() => {
     if (asset) {
-      setFqdn(asset.fqdn || '');
-      setIp(asset.ip || '');
-      setOwnerId(asset.owner_id || '');
+      setFqdn(asset.FQDN || '');
+      setIp(asset.IPAddress || '');
+      setOwnerId(asset.OwnerID || '');
     }
   }, [asset]);
 
@@ -38,9 +30,9 @@ function EditAssetModal({ asset, open, onClose, onSave }) {
     e.preventDefault();
     onSave({
       ...asset,
-      fqdn,
-      ip,
-      owner_id: ownerId,
+      FQDN: fqdn,
+      IPAddress: ip,
+      OwnerID: ownerId,
     });
   };
 
@@ -57,7 +49,7 @@ function EditAssetModal({ asset, open, onClose, onSave }) {
             margin="normal"
           />
           <TextField
-            label="IP"
+            label="IP Address"
             value={ip}
             onChange={e => setIp(e.target.value)}
             fullWidth
@@ -85,10 +77,6 @@ export default function AssetsPage({ token }) {
   const [editingAsset, setEditingAsset] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
 
-  // Context Menu state
-  const [contextAsset, setContextAsset] = useState(null);
-   const [menuPosition, setMenuPosition] = useState(null);
-
   useEffect(() => {
     fetch('http://localhost:8080/api/assets', {
       headers: { Authorization: `Bearer ${token}` }
@@ -97,17 +85,13 @@ export default function AssetsPage({ token }) {
       .then(setAssets);
   }, [token]);
 
-  const handleContextMenu = (event, asset) => {
-  event.preventDefault();
-  setContextAsset(asset);
-  setMenuPosition({
-    mouseX: event.clientX + 2,
-    mouseY: event.clientY - 6,
-  });
-};
+  const handleEditClick = (asset) => {
+    setEditingAsset(asset);
+    setModalOpen(true);
+  };
 
   const handleSave = (updatedAsset) => {
-    fetch(`http://localhost:8080/api/assets/${updatedAsset.id}`, {
+    fetch(`http://localhost:8080/api/assets/${updatedAsset.AssetID}`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -117,64 +101,53 @@ export default function AssetsPage({ token }) {
     })
       .then(res => res.json())
       .then(saved => {
-        setAssets(assets.map(a => a.id === saved.id ? saved : a));
+        setAssets(assets.map(a => a.AssetID === saved.AssetID ? saved : a));
         setModalOpen(false);
       });
   };
 
-  const handleMenuClose = () => {
-  setMenuPosition(null);
-};
-
-const handleEdit = () => {
-  setEditingAsset(contextAsset);
-  setModalOpen(true);
-  setMenuPosition(null);
-};
+  const columns = useMemo(() => [
+    { field: 'AssetID', headerName: 'ID', minWidth: 120, flex: 1 },
+    { field: 'FQDN', headerName: 'FQDN', minWidth: 180, flex: 2 },
+    { field: 'IPAddress', headerName: 'IP Address', minWidth: 150, flex: 2 },
+    { field: 'OwnerID', headerName: 'Owner ID', minWidth: 220, flex: 2 },
+    {
+      field: 'actions',
+      headerName: 'Actions',
+      minWidth: 120,
+      flex: 1,
+      sortable: false,
+      filterable: false,
+      renderCell: (params) => (
+        <Stack direction="row" spacing={1}>
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => handleEditClick(params.row)}
+          >
+            Edit
+          </Button>
+        </Stack>
+      ),
+    },
+  ], [assets]);
 
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" sx={{ mb: 2 }}>Assets</Typography>
       <Paper>
-        <Table>
-          <TableHead>
-            <TableRow>
-              <TableCell>ID</TableCell>
-              <TableCell>FQDN</TableCell>
-              <TableCell>IP Address</TableCell>
-              <TableCell>Owner ID</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {assets.map(asset => (
-              <TableRow
-                key={asset.id}
-                onContextMenu={e => handleContextMenu(e, asset)}
-                hover
-                sx={{ cursor: 'context-menu' }}
-              >
-                <TableCell>{asset.id}</TableCell>
-                <TableCell>{asset.fqdn}</TableCell>
-                <TableCell>{asset.ip}</TableCell>
-                <TableCell>{asset.owner_id}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+        <div style={{ height: 450, width: '100%' }}>
+          <DataGrid
+            rows={assets}
+            columns={columns}
+            getRowId={row => row.AssetID}
+            pageSize={10}
+            rowsPerPageOptions={[10, 20]}
+            disableRowSelectionOnClick
+            autoHeight={false}
+          />
+        </div>
       </Paper>
-      <Menu
-        open={Boolean(menuPosition)}
-        onClose={handleMenuClose}
-        anchorReference="anchorPosition"
-        anchorPosition={
-          menuPosition !== null
-            ? { top: menuPosition.mouseY, left: menuPosition.mouseX }
-            : undefined
-        }
-      >
-        <MenuItem onClick={handleEdit}>Edit</MenuItem>
-        <MenuItem onClick={handleMenuClose} sx={{ color: '#888' }}>Cancel</MenuItem>
-      </Menu>
       <EditAssetModal
         asset={editingAsset}
         open={modalOpen}

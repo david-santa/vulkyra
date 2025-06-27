@@ -1,80 +1,45 @@
 package main
 
 import (
-	"database/sql"
 	"log"
-
-	_ "github.com/lib/pq" // <-- This is required!
+	"os"
 
 	"github.com/david-santa/vulkyra/backend/cmd/auth"
+	"github.com/david-santa/vulkyra/backend/internal/models"
 	"github.com/david-santa/vulkyra/backend/internal/repository"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
-	db, err := sql.Open("postgres", "host=db user=vulkyra password=secretpassword dbname=vulkyra sslmode=disable")
+	// Use env or config for real-world apps!
+	dsn := "host=db user=vulkyra password=secretpassword dbname=vulkyra sslmode=disable"
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal(err)
+		log.Fatal("failed to connect database: ", err)
 	}
 
-	// Assign the DB instance to repository
-	repository.SetDB(db)
+	db.Migrator().DropTable(&models.Asset{}, &models.Team{}, &models.User{}, &models.Vulnerability{})
 
-	db.Exec("DROP TABLE teams CASCADE")
-	db.Exec("DROP TABLE assets CASCADE")
-	db.Exec("DROP TABLE users")
-	db.Exec("DROP TABLE vulnerabilities")
+	// Auto-migrate all models (creates tables if not exist, updates fields)
+	if err := db.AutoMigrate(
+		&models.Team{},
+		&models.Asset{},
+		&models.User{},
+		&models.Vulnerability{},
+	); err != nil {
+		log.Fatal("failed to migrate database: ", err)
+	}
 
-	// Create table if not exists (for quick dev/demo)
-	db.Exec(`CREATE TABLE IF NOT EXISTS assets (
-        id SERIAL PRIMARY KEY,
-        fqdn VARCHAR(255),
-        ip VARCHAR(50),
-		owner_id BIGINT
-    )`)
-
-	db.Exec(`CREATE TABLE IF NOT EXISTS teams (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE,
-    email VARCHAR(255) NOT NULL UNIQUE,
-    parent_id BIGINT NOT NULL
-	)`)
-
-	db.Exec(`CREATE TABLE IF NOT EXISTS users (
-	id SERIAL PRIMARY KEY,
-	username VARCHAR(255) NOT NULL UNIQUE,
-	email VARCHAR(255) UNIQUE,
-	password_hash VARCHAR(255) NOT NULL,
-	role VARCHAR(255)
-	)`)
-
-	db.Exec(`CREATE TABLE IF NOT EXISTS vulnerabilities (
-    id SERIAL PRIMARY KEY,
-    asset_id INTEGER REFERENCES assets(id),
-    plugin_id INTEGER,
-    plugin_name TEXT,
-    plugin_family TEXT,
-    port INTEGER,
-    protocol TEXT,
-    service TEXT,
-    severity INTEGER,
-    risk_factor TEXT,
-    description TEXT,
-    solution TEXT,
-    output TEXT,
-    cves TEXT[],
-    cvss_score FLOAT,
-    refs TEXT[],
-	owner_id INT REFERENCES teams(id)
-	);`)
-
-	repository.InsertDummyAssets()
-	repository.InsertDummyTeams()
-	repository.InsertDummyUsers()
+	repository.InsertDummyUsers(db)
+	repository.InsertDummyTeams(db)
+	repository.InsertDummyAssets(db)
 
 	r := gin.Default()
 
+	// Attach the GORM DB to Gin context so you can use it in handlers
 	r.Use(func(c *gin.Context) {
 		c.Set("db", db)
 		c.Next()
@@ -82,7 +47,7 @@ func main() {
 
 	// Enable CORS for all Methods and Headers
 	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost", "http://localhost:8080, http://localhost:5432"},
+		AllowOrigins:     []string{"http://localhost", "http://localhost:8080", "http://localhost:5432", "http://localhost:5173"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
@@ -93,7 +58,11 @@ func main() {
 	protected := r.Group("/api")
 	protected.Use(auth.AuthMiddleware())
 
-	RegisterAllRoutes(r, protected)
+	RegisterAllRoutes(r, protected) // You must update your routes/handlers to use GORM DB
 
-	r.Run(":8080")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+	r.Run(":" + port)
 }

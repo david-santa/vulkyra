@@ -1,8 +1,15 @@
 package models
 
+import (
+	"github.com/google/uuid"
+	_ "gorm.io/gorm"
+)
+
 type Team struct {
-	ID       int64  `json:"id" db:"id"`
-	Name     string `json:"name" db:"name"`
-	Email    string `json:"email" db:"email"`
-	ParentID int64  `json:"parent_id" db:"parent_id"`
+	TeamID    uuid.UUID  `gorm:"type:uuid;default:gen_random_uuid();primaryKey"`
+	TeamName  string     `gorm:"unique;not null"`
+	TeamEmail string     `gorm:"unique;not null"`
+	ParentID  *uuid.UUID // Nullable to allow top-level teams
+	Parent    *Team      `gorm:"foreignKey:ParentID"` // The parent team object
+	Assets    []Asset    `gorm:"foreignKey:OwnerID"`
 }

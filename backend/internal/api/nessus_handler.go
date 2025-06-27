@@ -5,6 +5,7 @@ import (
 
 	"github.com/david-santa/vulkyra/backend/internal/service"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 func RegisterNessusRoutes(r *gin.RouterGroup) {
@@ -12,6 +13,8 @@ func RegisterNessusRoutes(r *gin.RouterGroup) {
 }
 
 func uploadNessusFile(c *gin.Context) {
+	db := c.MustGet("db").(*gorm.DB)
+
 	file, err := c.FormFile("nessusFile")
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "No file uploaded"})
@@ -23,7 +26,7 @@ func uploadNessusFile(c *gin.Context) {
 		return
 	}
 	defer f.Close()
-	err = service.ProcessNessusUpload(f)
+	err = service.ProcessNessusUpload(db, f)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

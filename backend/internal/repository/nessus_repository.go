@@ -2,26 +2,22 @@ package repository
 
 import (
 	"github.com/david-santa/vulkyra/backend/internal/models"
+	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
-func BulkInsertAssets(assets []models.Asset) error {
-	for _, asset := range assets {
-		_, err := db.Exec("INSERT INTO assets (fqdn, ip, owner_id) VALUES ($1, $2, $3) ON CONFLICT DO NOTHING",
-			asset.FQDN, asset.IP, asset.OwnerID)
-		if err != nil {
-			return err
-		}
+// BulkInsertAssets inserts multiple assets and ignores conflicts (e.g. duplicates)
+func BulkInsertAssets(db *gorm.DB, assets []models.Asset) error {
+	if len(assets) == 0 {
+		return nil
 	}
-	return nil
+	return db.Clauses(clause.OnConflict{DoNothing: true}).Create(&assets).Error
 }
 
-func BulkInsertVulnerabilities(vulns []models.Vulnerability) error {
-	for _, vuln := range vulns {
-		_, err := db.Exec("INSERT INTO vulnerabilities (asset_id, cve, severity, plugin_id) VALUES ($1, $2, $3, $4) ON CONFLICT DO NOTHING",
-			vuln.AssetID, vuln.CVEs, vuln.Severity, vuln.PluginID)
-		if err != nil {
-			return err
-		}
+// BulkInsertVulnerabilities inserts multiple vulnerabilities, ignores conflicts
+func BulkInsertVulnerabilities(db *gorm.DB, vulns []models.Vulnerability) error {
+	if len(vulns) == 0 {
+		return nil
 	}
-	return nil
+	return db.Clauses(clause.OnConflict{DoNothing: true}).Create(&vulns).Error
 }

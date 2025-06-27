@@ -1,16 +1,16 @@
 package parsers
 
 import (
+	"encoding/json"
 	"encoding/xml"
 	"fmt"
 	"io"
 	"os"
 	"strings"
 
-	"github.com/david-santa/vulkyra/backend/internal/repository"
-	"github.com/lib/pq"
-
 	"github.com/david-santa/vulkyra/backend/internal/models"
+	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type NessusClientData struct {
@@ -50,17 +50,17 @@ type ReportItem struct {
 	SeeAlso       []string `xml:"see_also"`
 }
 
-func ParseNessusFile(path string) error {
+// ParseNessusFile now takes a *gorm.DB
+func ParseNessusFile(db *gorm.DB, path string) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return err
 	}
 	defer file.Close()
-
-	return parseAndInsert(file)
+	return parseAndInsert(db, file)
 }
 
-func parseAndInsert(reader io.Reader) error {
+func parseAndInsert(db *gorm.DB, reader io.Reader) error {
 	var data NessusClientData
 	if err := xml.NewDecoder(reader).Decode(&data); err != nil {
 		return err
@@ -68,13 +68,26 @@ func parseAndInsert(reader io.Reader) error {
 
 	for _, host := range data.Report.ReportHosts {
 		ip, fqdn := extractIPAndFQDN(host.HostTags)
-		assetID, err := getOrCreateAsset(ip, fqdn)
+		assetID, err := getOrCreateAssetGORM(db, ip, fqdn)
 		if err != nil {
 			fmt.Printf("Could not create/find asset for IP: %s, FQDN: %s (err: %v)\n", ip, fqdn, err)
 			continue
 		}
 
 		for _, item := range host.ReportItems {
+			// Convert comma-separated CVE string to []string, ignore empty
+			cveSlice := []string{}
+			if strings.TrimSpace(item.CVE) != "" {
+				for _, cve := range strings.Split(item.CVE, ",") {
+					cve = strings.TrimSpace(cve)
+					if cve != "" {
+						cveSlice = append(cveSlice, cve)
+					}
+				}
+			}
+			cvesJSON, _ := json.Marshal(cveSlice)
+			refsJSON, _ := json.Marshal(item.SeeAlso)
+
 			vuln := models.Vulnerability{
 				AssetID:      assetID,
 				PluginID:     item.PluginID,
@@ -88,17 +101,16 @@ func parseAndInsert(reader io.Reader) error {
 				Description:  item.Description,
 				Solution:     item.Solution,
 				Output:       item.PluginOutput,
-				CVEs:         strings.Split(item.CVE, ","),
+				CVEs:         cvesJSON,
 				CVSSScore:    item.CVSSBaseScore,
-				Refs:         item.SeeAlso,
+				Refs:         refsJSON,
+				OwnerID:      uuid.Nil, // Use actual owner if available
 			}
-			err := insertVulnerability(vuln)
-			if err != nil {
-				fmt.Println(err.Error())
+			if err := db.Create(&vuln).Error; err != nil {
+				fmt.Println("Insert vulnerability error:", err)
 			}
 		}
 	}
-
 	return nil
 }
 
@@ -114,54 +126,34 @@ func extractIPAndFQDN(tags []HostTag) (ip, fqdn string) {
 	return
 }
 
-func getOrCreateAsset(ip, fqdn string) (int, error) {
-	var id int
-	// Try to find the asset first
-	err := repository.GetDB().QueryRow(`
-		SELECT id FROM assets WHERE ip = $1 OR fqdn = $2 LIMIT 1`, ip, fqdn).Scan(&id)
-	if err == nil {
-		return id, nil
+// Uses GORM and UUIDs!
+func getOrCreateAssetGORM(db *gorm.DB, ip, fqdn string) (uuid.UUID, error) {
+	var asset models.Asset
+	var unassingedVulnerabilitiesTeam models.Team
+	result := db.Where("ip_address = ? OR fqdn = ?", ip, fqdn).First(&asset)
+	if result.Error == nil {
+		return asset.AssetID, nil
 	}
-	// If not found, insert it and return the new id
-	err = repository.GetDB().QueryRow(`
-		INSERT INTO assets (ip, fqdn, owner_id) VALUES ($1, $2, $3) RETURNING id`, ip, fqdn, 0).Scan(&id)
-	return id, err
+	if result.Error != gorm.ErrRecordNotFound {
+		return uuid.Nil, result.Error
+	}
+	teamQueryResult := db.Where("team_name = ?", "Unassigned Vulnerabilities").First(&unassingedVulnerabilitiesTeam)
+	if teamQueryResult != nil {
+		fmt.Println("Failed to get unassigned vulnerabilities team UUID")
+	}
+
+	asset = models.Asset{
+		FQDN:      fqdn,
+		IPAddress: ip,
+		OwnerID:   unassingedVulnerabilitiesTeam.TeamID,
+	}
+	if err := db.Create(&asset).Error; err != nil {
+		return uuid.Nil, err
+	}
+	return asset.AssetID, nil
 }
 
-func insertVulnerability(v models.Vulnerability) error {
-	_, err := repository.GetDB().Exec(`
-		INSERT INTO vulnerabilities (
-			asset_id, plugin_id, plugin_name, plugin_family,
-			port, protocol, service, severity,
-			risk_factor, description, solution, output,
-			cves, cvss_score, refs, owner_id
-		) VALUES (
-			$1, $2, $3, $4,
-			$5, $6, $7, $8,
-			$9, $10, $11, $12,
-			$13, $14, $15, $16
-		)
-	`,
-		v.AssetID,
-		v.PluginID,
-		v.PluginName,
-		v.PluginFamily,
-		v.Port,
-		v.Protocol,
-		v.Service,
-		v.Severity,
-		v.RiskFactor,
-		v.Description,
-		v.Solution,
-		v.Output,
-		pq.Array(v.CVEs), // For TEXT[] columns, use pq.Array
-		v.CVSSScore,
-		pq.Array(v.Refs), // For TEXT[] columns, use pq.Array
-		int(1),
-	)
-	return err
-}
-
-func ParseAndInsertFromReader(reader io.Reader) error {
-	return parseAndInsert(reader)
+// For streaming reads, e.g. from an uploaded file
+func ParseAndInsertFromReader(db *gorm.DB, reader io.Reader) error {
+	return parseAndInsert(db, reader)
 }
