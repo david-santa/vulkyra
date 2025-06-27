@@ -11,6 +11,10 @@ services:
       DATABASE_URL: postgres://vulkyra:secretpassword@db:5432/vulkyra?sslmode=disable
     depends_on:
       - db
+    volumes:
+      - ./backend:/app
+      - /app/tmp # needed for air
+      # (optional) - ~/.ssh:/root/.ssh:ro if you need private repo access
 
   frontend:
     build:
@@ -20,6 +24,9 @@ services:
       - "80:80"
     depends_on:
       - backend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
 
   db:
     image: postgres:16
