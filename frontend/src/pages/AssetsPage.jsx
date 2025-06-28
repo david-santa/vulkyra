@@ -110,7 +110,7 @@ export default function AssetsPage({ token }) {
     { field: 'AssetID', headerName: 'ID', minWidth: 120, flex: 1 },
     { field: 'FQDN', headerName: 'FQDN', minWidth: 180, flex: 2 },
     { field: 'IPAddress', headerName: 'IP Address', minWidth: 150, flex: 2 },
-    { field: 'OwnerID', headerName: 'Owner ID', minWidth: 220, flex: 2 },
+    { field: 'OwnerName', headerName: 'Owner Name', minWidth: 220, flex: 2 },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -138,7 +138,7 @@ export default function AssetsPage({ token }) {
       <Paper>
         <div style={{ height: 450, width: '100%' }}>
           <DataGrid
-            rows={assets}
+            rows={assets.map(a => ({ ...a, id: a.AssetID, OwnerName: a.Owner?.TeamName || '' }))}
             columns={columns}
             getRowId={row => row.AssetID}
             pageSize={10}
