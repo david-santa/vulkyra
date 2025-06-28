@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   Box,
   Button,
@@ -19,29 +19,34 @@ export default function VulnerabilitiesPage({ token }) {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [fetching, setFetching] = useState(true);
+  const [fetchError, setFetchError] = useState('');
 
-  // Fetch vulnerabilities
-  const fetchVulns = () => {
+  // Fetch vulnerabilities (async/await, error handling, env var)
+  const fetchVulns = async () => {
     setFetching(true);
-    fetch('http://localhost:8080/api/vulnerabilities', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(data => {
-        // Use VulnID or fallback for unique row id
-        const gridData = Array.isArray(data)
-          ? data.map((v, i) => ({
-              id: v.VulnID || `${v.AssetID}-${v.PluginID}-${i}`,
-              ...v,
-            }))
-          : [];
-        setVulns(gridData);
-        setFetching(false);
-      })
-      .catch(() => setFetching(false));
+    setFetchError('');
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/vulnerabilities`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error('Failed to fetch vulnerabilities');
+      const data = await res.json();
+      const gridData = Array.isArray(data)
+        ? data.map((v, i) => ({
+            id: v.VulnID || `${v.AssetID}-${v.PluginID}-${i}`,
+            ...v,
+          }))
+        : [];
+      setVulns(gridData);
+    } catch (err) {
+      setFetchError(err.message);
+      setVulns([]);
+    } finally {
+      setFetching(false);
+    }
   };
 
-  useEffect(fetchVulns, [token]);
+  useEffect(() => { fetchVulns(); }, [token]);
 
   // Handle Nessus file upload
   const handleUpload = async () => {
@@ -51,13 +56,11 @@ export default function VulnerabilitiesPage({ token }) {
     try {
       const form = new FormData();
       form.append('nessusFile', file);
-
-      const res = await fetch('http://localhost:8080/api/nessus/upload', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/nessus/upload`, {
         method: 'POST',
         body: form,
         headers: { Authorization: `Bearer ${token}` }
       });
-
       if (!res.ok) {
         const data = await res.json();
         setUploadError(data?.error || 'Failed to import file.');
@@ -73,46 +76,52 @@ export default function VulnerabilitiesPage({ token }) {
     }
   };
 
-  // DataGrid columns (PascalCase for backend consistency)
-  const columns = [
-  { field: 'asset_name', headerName: 'Asset Name', minWidth: 140, flex: 1 },
-  { field: 'owner_name', headerName: 'Owner Name', minWidth: 140, flex: 1 },
-  { field: 'plugin_id', headerName: 'Plugin ID', width: 100 },
-  { field: 'plugin_name', headerName: 'Plugin Name', minWidth: 180, flex: 1 },
-  { field: 'severity', headerName: 'Severity', width: 90 },
-  {
-    field: 'cves',
-    headerName: 'CVE(s)',
-    minWidth: 160,
-    flex: 1,
-    valueGetter: (params) => {
-      const cves = params?.row?.cves;
-      if (Array.isArray(cves)) return cves.join(', ');
-      if (typeof cves === "string") return cves;
-      return '';
+  // Memoize columns
+  const columns = useMemo(() => [
+    { field: 'asset_name', headerName: 'Asset Name', minWidth: 140, flex: 1 },
+    { field: 'owner_name', headerName: 'Owner Name', minWidth: 140, flex: 1 },
+    { field: 'plugin_id', headerName: 'Plugin ID', width: 100 },
+    { field: 'plugin_name', headerName: 'Plugin Name', minWidth: 180, flex: 1 },
+    { field: 'severity', headerName: 'Severity', width: 90 },
+    {
+      field: 'cves',
+      headerName: 'CVE(s)',
+      minWidth: 160,
+      flex: 1,
+      valueGetter: (params) => {
+        const cves = params?.row?.cves;
+        if (Array.isArray(cves)) return cves.join(', ');
+        if (typeof cves === "string") return cves;
+        return '';
+      },
+      renderCell: (params) => {
+        const cves = params?.row?.cves;
+        const display = Array.isArray(cves) ? cves.join(', ') : (typeof cves === "string" ? cves : '');
+        return (
+          <Typography variant="body2" noWrap title={display} aria-label="CVE list">
+            {display}
+          </Typography>
+        );
+      },
     },
-    renderCell: (params) => {
-      const cves = params?.row?.cves;
-      const display = Array.isArray(cves) ? cves.join(', ') : (typeof cves === "string" ? cves : '');
-      return (
-        <Typography variant="body2" noWrap title={display}>
-          {display}
+    {
+      field: 'description',
+      headerName: 'Description',
+      minWidth: 200,
+      flex: 2,
+      renderCell: params => (
+        <Typography variant="body2" noWrap title={params.value} aria-label="Description">
+          {params.value}
         </Typography>
-      );
+      ),
     },
-  },
-  {
-    field: 'description',
-    headerName: 'Description',
-    minWidth: 200,
-    flex: 2,
-    renderCell: params => (
-      <Typography variant="body2" noWrap title={params.value}>
-        {params.value}
-      </Typography>
-    ),
-  },
-];
+  ], []);
+
+  // Reset file input after upload
+  const handleFileChange = (e) => {
+    setFile(e.target.files[0]);
+    e.target.value = null;
+  };
 
   return (
     <Box sx={{ p: 3 }}>
@@ -122,10 +131,14 @@ export default function VulnerabilitiesPage({ token }) {
           variant="contained"
           startIcon={<UploadFileIcon />}
           onClick={() => setImportOpen(true)}
+          aria-label="Open import dialog"
         >
           Import
         </Button>
       </Box>
+      {fetchError && (
+        <Typography color="error" sx={{ mb: 2 }}>{fetchError}</Typography>
+      )}
       <Box component={Paper} sx={{ height: 520, width: '100%', mb: 3 }}>
         <DataGrid
           rows={vulns}
@@ -138,7 +151,6 @@ export default function VulnerabilitiesPage({ token }) {
           sx={{ bgcolor: 'background.paper' }}
         />
       </Box>
-
       {/* Import Nessus Modal */}
       <Dialog open={importOpen} onClose={() => setImportOpen(false)} maxWidth="xs" fullWidth>
         <DialogTitle>Import Vulnerabilities (.nessus)</DialogTitle>
@@ -150,13 +162,14 @@ export default function VulnerabilitiesPage({ token }) {
             fullWidth
             sx={{ my: 2 }}
             disabled={uploading}
+            aria-label="Select .nessus file"
           >
             Select .nessus file
             <input
               type="file"
               accept=".nessus,.xml"
               hidden
-              onChange={e => setFile(e.target.files[0])}
+              onChange={handleFileChange}
             />
           </Button>
           <Typography variant="body2" color={file ? "primary" : "text.secondary"}>
@@ -174,6 +187,7 @@ export default function VulnerabilitiesPage({ token }) {
             onClick={handleUpload}
             variant="contained"
             disabled={!file || uploading}
+            aria-label="Import selected file"
           >
             {uploading ? "Uploading..." : "Import"}
           </Button>
