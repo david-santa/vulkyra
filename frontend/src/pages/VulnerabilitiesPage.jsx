@@ -87,7 +87,29 @@ export default function VulnerabilitiesPage({ token }) {
     { field: 'owner_name', headerName: 'Owner Name', minWidth: 140, flex: 1 },
     { field: 'plugin_id', headerName: 'Plugin ID', width: 100 },
     { field: 'plugin_name', headerName: 'Plugin Name', minWidth: 180, flex: 1 },
-    { field: 'severity', headerName: 'Severity', width: 90 },
+    {
+      field: 'severity',
+      headerName: 'Severity',
+      width: 110,
+      renderCell: (params) => {
+        const sev = Number(params.value);
+        let label = 'Info';
+        if (sev === 1) label = 'Low';
+        else if (sev === 2) label = 'Medium';
+        else if (sev === 3) label = 'High';
+        else if (sev === 4) label = 'Critical';
+        return (
+          <Typography variant="body2" color={
+            sev === 1 ? 'primary' :
+            sev === 2 ? 'warning.main' :
+            sev === 3 ? 'error' :
+            sev === 4 ? 'error' : 'text.secondary'
+          }>
+            {label}
+          </Typography>
+        );
+      },
+    },
     {
       field: 'cves',
       headerName: 'CVE(s)',
