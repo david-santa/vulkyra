@@ -15,13 +15,13 @@ func GetAllAssets(db *gorm.DB) ([]models.Asset, error) {
 
 func GetAssetByID(db *gorm.DB, id string) (models.Asset, error) {
 	var asset models.Asset
-	err := db.First(&asset, "id = ?", id).Error
+	err := db.First(&asset, "asset_id = ?", id).Error
 	return asset, err
 }
 
 func UpdateAsset(db *gorm.DB, id string, updated models.Asset) (models.Asset, error) {
 	var asset models.Asset
-	if err := db.First(&asset, "id = ?", id).Error; err != nil {
+	if err := db.First(&asset, "asset_id = ?", id).Error; err != nil {
 		return asset, err
 	}
 	// Only update fields that are allowed

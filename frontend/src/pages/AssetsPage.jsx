@@ -76,13 +76,29 @@ export default function AssetsPage({ token }) {
   const [assets, setAssets] = useState([]);
   const [editingAsset, setEditingAsset] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Memoize transformed rows for DataGrid
+  const assetRows = useMemo(() =>
+    assets.map(a => ({ ...a, id: a.AssetID, OwnerName: a.Owner?.TeamName || '' })),
+    [assets]
+  );
 
   useEffect(() => {
-    fetch('http://localhost:8080/api/assets', {
-      headers: { Authorization: `Bearer ${token}` }
-    })
-      .then(res => res.json())
-      .then(setAssets);
+    const fetchAssets = async () => {
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/assets`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (!res.ok) throw new Error('Failed to fetch assets');
+        const data = await res.json();
+        setAssets(data);
+        setError(null);
+      } catch (err) {
+        setError(err.message);
+      }
+    };
+    fetchAssets();
   }, [token]);
 
   const handleEditClick = (asset) => {
@@ -90,20 +106,25 @@ export default function AssetsPage({ token }) {
     setModalOpen(true);
   };
 
-  const handleSave = (updatedAsset) => {
-    fetch(`http://localhost:8080/api/assets/${updatedAsset.AssetID}`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`
-      },
-      body: JSON.stringify(updatedAsset)
-    })
-      .then(res => res.json())
-      .then(saved => {
-        setAssets(assets.map(a => a.AssetID === saved.AssetID ? saved : a));
-        setModalOpen(false);
+  const handleSave = async (updatedAsset) => {
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:8080'}/api/assets/${updatedAsset.AssetID}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
+        body: JSON.stringify(updatedAsset)
       });
+      if (!res.ok) throw new Error('Failed to update asset');
+      const saved = await res.json();
+      setAssets(assets.map(a => a.AssetID === saved.AssetID ? saved : a));
+      setModalOpen(false);
+      setEditingAsset(null);
+      setError(null);
+    } catch (err) {
+      setError(err.message);
+    }
   };
 
   const columns = useMemo(() => [
@@ -130,15 +151,16 @@ export default function AssetsPage({ token }) {
         </Stack>
       ),
     },
-  ], [assets]);
+  ], []);
 
   return (
     <Box sx={{ p: 3 }}>
       <Typography variant="h4" sx={{ mb: 2 }}>Assets</Typography>
+      {error && <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>}
       <Paper>
         <div style={{ height: 450, width: '100%' }}>
           <DataGrid
-            rows={assets.map(a => ({ ...a, id: a.AssetID, OwnerName: a.Owner?.TeamName || '' }))}
+            rows={assetRows}
             columns={columns}
             getRowId={row => row.AssetID}
             pageSize={10}
@@ -151,7 +173,7 @@ export default function AssetsPage({ token }) {
       <EditAssetModal
         asset={editingAsset}
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={() => { setModalOpen(false); setEditingAsset(null); }}
         onSave={handleSave}
       />
     </Box>
