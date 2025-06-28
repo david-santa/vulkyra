@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -35,7 +36,7 @@ func LoginHandler(c *gin.Context) {
 
 	var user models.User
 	err := db.Where("username = ?", creds.Username).First(&user).Error
-	if err == gorm.ErrRecordNotFound {
+	if errors.Is(err, gorm.ErrRecordNotFound) {
 		c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid credentials"})
 		return
 	} else if err != nil {
