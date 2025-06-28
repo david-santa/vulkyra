@@ -2,7 +2,6 @@ package ownership
 
 import (
 	"encoding/csv"
-	"fmt"
 	"io"
 	"os"
 
@@ -29,7 +28,6 @@ func AssignAssetOwnershipBasedOnIP(db *gorm.DB, IP string) uuid.UUID {
 func searchStaticCSVOwnershipByIP(IP string) string {
 	file, err := os.Open("/app/internal/ownership/static_ownership_ip.csv")
 	if err != nil {
-		fmt.Println(err.Error())
 		return ""
 	}
 	defer file.Close()
