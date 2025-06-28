@@ -12,7 +12,6 @@ import (
 
 func AssignAssetOwnershipBasedOnIP(db *gorm.DB, IP string) uuid.UUID {
 	teamName := searchStaticCSVOwnershipByIP(IP)
-	fmt.Println("Team name: ", teamName)
 	if teamName != "" {
 		var team struct{ TeamID uuid.UUID }
 		if err := db.Table("teams").Where("team_name = ?", teamName).Select("team_id").First(&team).Error; err == nil {

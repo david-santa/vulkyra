@@ -69,9 +69,12 @@ func parseAndInsert(db *gorm.DB, reader io.Reader) error {
 
 	for _, host := range data.Report.ReportHosts {
 		ip, fqdn := extractIPAndFQDN(host.HostTags)
+		ownerUUID := ownership.AssignAssetOwnershipBasedOnIP(db, ip)
+		var owner models.Team
+		db.Table("teams").Where("team_id = ?", ownerUUID).First(&owner)
+		ownerName := owner.TeamName
 		assetID, err := getOrCreateAssetGORM(db, ip, fqdn)
 		if err != nil {
-			fmt.Printf("Could not create/find asset for IP: %s, FQDN: %s (err: %v)\n", ip, fqdn, err)
 			continue
 		}
 
@@ -105,7 +108,8 @@ func parseAndInsert(db *gorm.DB, reader io.Reader) error {
 				CVEs:         cvesJSON,
 				CVSSScore:    item.CVSSBaseScore,
 				Refs:         refsJSON,
-				OwnerID:      uuid.Nil, // Use actual owner if available
+				OwnerID:      ownerUUID,
+				OwnerName:    ownerName,
 			}
 			if err := db.Create(&vuln).Error; err != nil {
 				fmt.Println("Insert vulnerability error:", err)

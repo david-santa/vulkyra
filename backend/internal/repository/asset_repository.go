@@ -7,10 +7,9 @@ import (
 	"gorm.io/gorm"
 )
 
-// Pass *gorm.DB explicitly, or store in struct/context for real app
 func GetAllAssets(db *gorm.DB) ([]models.Asset, error) {
 	var assets []models.Asset
-	err := db.Find(&assets).Error
+	err := db.Preload("Owner").Find(&assets).Error
 	return assets, err
 }
 
