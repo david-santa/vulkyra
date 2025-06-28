@@ -10,6 +10,8 @@ import {
   DialogActions,
   Typography,
   Paper,
+  FormControlLabel,
+  Switch,
 } from '@mui/material';
 import { DataGrid } from '@mui/x-data-grid';
 import UploadFileIcon from '@mui/icons-material/UploadFile';
@@ -22,6 +24,7 @@ export default function VulnerabilitiesPage({ token }) {
   const [uploadError, setUploadError] = useState('');
   const [fetching, setFetching] = useState(true);
   const [fetchError, setFetchError] = useState('');
+  const [showInfo, setShowInfo] = useState(false);
 
   // Fetch vulnerabilities (async/await, error handling, env var)
   const fetchVulns = async () => {
@@ -119,6 +122,12 @@ export default function VulnerabilitiesPage({ token }) {
     },
   ], []);
 
+  // Filter vulnerabilities based on showInfo switch
+  const filteredVulns = useMemo(() =>
+    showInfo ? vulns : vulns.filter(v => Number(v.severity) > 0),
+    [vulns, showInfo]
+  );
+
   // Reset file input after upload
   const handleFileChange = (e) => {
     setFile(e.target.files[0]);
@@ -129,6 +138,10 @@ export default function VulnerabilitiesPage({ token }) {
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: 'flex', alignItems: 'center', mb: 2, gap: 2 }}>
         <Typography variant="h4" sx={{ flexGrow: 1 }}>Vulnerabilities</Typography>
+        <FormControlLabel
+          control={<Switch checked={showInfo} onChange={e => setShowInfo(e.target.checked)} color="primary" />}
+          label="Show Info Level"
+        />
         <Button
           variant="contained"
           startIcon={<UploadFileIcon />}
@@ -143,7 +156,7 @@ export default function VulnerabilitiesPage({ token }) {
       )}
       <Box component={Paper} sx={{ height: 520, width: '100%', mb: 3 }}>
         <DataGrid
-          rows={vulns}
+          rows={filteredVulns}
           columns={columns}
           loading={fetching}
           disableRowSelectionOnClick
