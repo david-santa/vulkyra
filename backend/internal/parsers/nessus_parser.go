@@ -116,6 +116,12 @@ func parseAndInsert(db *gorm.DB, reader io.Reader) error {
 			}
 		}
 	}
+	// After all vulnerabilities are inserted, recalculate VulnerabilityCount for all assets
+	if err := db.Exec(`UPDATE assets SET vulnerability_count = (
+		SELECT COUNT(*) FROM vulnerabilities WHERE vulnerabilities.asset_id = assets.asset_id
+	)`).Error; err != nil {
+		return err
+	}
 	return nil
 }
 

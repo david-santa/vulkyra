@@ -132,6 +132,7 @@ export default function AssetsPage({ token }) {
     { field: 'FQDN', headerName: 'FQDN', minWidth: 180, flex: 2 },
     { field: 'IPAddress', headerName: 'IP Address', minWidth: 150, flex: 2 },
     { field: 'OwnerName', headerName: 'Owner Name', minWidth: 220, flex: 2 },
+    { field: 'VulnerabilityCount', headerName: 'Vulnerabilities', minWidth: 120, flex: 1, type: 'number' },
     {
       field: 'actions',
       headerName: 'Actions',
